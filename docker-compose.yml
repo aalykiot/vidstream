@@ -1,0 +1,18 @@
+version: '3.7'
+services:
+  gateway:
+    build: ./gateway
+    volumes:
+      - ./gateway:/app
+    ports:
+      - 8080:8080
+  # mongo:
+  #   image: mongo
+  #   restart: always
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: 87BQTcgQsUvVvfpXTvMz
+  #   volumes:
+  #     - /tmp/mongo/data:/data/db
+  #   ports:
+  #     - 27017:27017
