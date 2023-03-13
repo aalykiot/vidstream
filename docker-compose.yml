@@ -2,17 +2,30 @@ version: '3.7'
 services:
   gateway:
     build: ./gateway
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URL: 'mongodb:27017'
+      MONGO_USERNAME: 'vidstreamUser'
+      MONGO_PASSWORD: '6yeuWT5FJ3Xc9FvxfcGJcfG625eLLn'
+      MONGO_AUTH_SOURCE: 'vidstream'
+      JWT_SECRET: 'A79PSLTW6VAdKpGrNbZs96HHHCgUHb'
     volumes:
       - ./gateway:/app
     ports:
       - 8080:8080
-  # mongo:
-  #   image: mongo
-  #   restart: always
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: root
-  #     MONGO_INITDB_ROOT_PASSWORD: 87BQTcgQsUvVvfpXTvMz
-  #   volumes:
-  #     - /tmp/mongo/data:/data/db
-  #   ports:
-  #     - 27017:27017
+  mongodb:
+    image: mongo
+    restart: on-failure
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: a35eLBQRPBCbd93uaABnqcQ2JXjjVC
+      MONGO_INITDB_DATABASE: vidstream
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    ports:
+      - 27017:27017
+volumes:
+  mongodb_data:
+    driver: local
