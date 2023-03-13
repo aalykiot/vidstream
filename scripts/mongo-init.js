@@ -4,5 +4,5 @@ db.createUser({
   roles: [{ role: 'readWrite', db: 'vidstream' }]
 });
 
-db.createCollection('users');
-db.createCollection('videos');
+db.createCollection('admins');
+db.createCollection('multimedia');
