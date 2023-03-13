@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
 const configSchema = z.object({
+  app: z.object({
+    port: z.string().optional().default('8080'),
+  }),
   db: z.object({
     url: z.string(),
     username: z.string(),
@@ -13,6 +16,9 @@ const configSchema = z.object({
 });
 
 const config = configSchema.parse({
+  app: {
+    port: process.env.PORT,
+  },
   db: {
     url: process.env.MONGO_URL,
     username: process.env.MONGO_USERNAME,

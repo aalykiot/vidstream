@@ -1,12 +1,18 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import server from './src/server';
+import Fastify from 'fastify';
+import App from './src/app';
 import db from './src/db';
+import config from './src/config';
 
-async function main() {
+async function start() {
+  const fastify = Fastify();
+  const port = Number.parseInt(config.app.port);
+
   await db.connect();
-  await server.listen({ port: 8080, host: '0.0.0.0' });
+  await fastify.register(App);
+  await fastify.listen({ port, host: '0.0.0.0' });
 }
 
-main();
+start();

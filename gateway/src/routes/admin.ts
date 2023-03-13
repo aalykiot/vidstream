@@ -1,25 +1,19 @@
-import fastify from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import config from './config';
-import { getDatabase } from './db';
+import config from '../config';
+import { getDatabase } from '../db';
 
-const server = fastify();
-
-// Health check.
-server.get('/', (_request, reply) => {
-  reply.send({ ok: true });
-});
-
-const adminAuthCreateSchema = z.object({
+const authCreateSchema = z.object({
   name: z.string().min(3).max(15),
-  password: z.string().min(8)
+  password: z.string().min(8),
 });
 
-server.post('/__admin/auth/create', async (request, reply) => {
+// The controller for the /__admin/auth/create endpoint.
+async function onAuthCreate(request: FastifyRequest, reply: FastifyReply) {
   // Validate input schema.
-  const validation = adminAuthCreateSchema.safeParse(request.body);
+  const validation = authCreateSchema.safeParse(request.body);
 
   if (!validation.success) {
     reply.code(400).send(validation.error);
@@ -30,7 +24,7 @@ server.post('/__admin/auth/create', async (request, reply) => {
 
   // Check if provided name is already an admin.
   const docCount = await usersCollection.countDocuments({
-    name: validation.data.name
+    name: validation.data.name,
   });
 
   if (docCount !== 0) {
@@ -47,7 +41,16 @@ server.post('/__admin/auth/create', async (request, reply) => {
   // Generate JWT token.
   const token = jwt.sign({ isAdmin: true }, config.jwt.secret);
 
-  reply.send({ token });
-});
+  return { token };
+}
 
-export default server;
+export const autoPrefix = '/__admin';
+
+export default async function (fastify: FastifyInstance) {
+  // Register the route to fastify.
+  fastify.route({
+    method: 'POST',
+    url: '/auth/create',
+    handler: onAuthCreate,
+  });
+}
