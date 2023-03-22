@@ -14,11 +14,11 @@
   "dependencies": {
     "@fastify/autoload": "^5.7.1",
     "@fastify/cors": "^8.2.0",
-    "bcryptjs": "^2.4.3",
+    "@fastify/multipart": "^7.5.0",
     "dotenv": "^16.0.3",
     "fastify": "^4.14.1",
-    "jsonwebtoken": "^9.0.0",
     "mongodb": "^5.1.0",
+    "nanoid": "3.3.4",
     "zod": "^3.21.4"
   },
   "devDependencies": {
