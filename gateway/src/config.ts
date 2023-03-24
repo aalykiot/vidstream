@@ -6,9 +6,6 @@ const configSchema = z.object({
   }),
   db: z.object({
     url: z.string(),
-    username: z.string(),
-    password: z.string(),
-    authSource: z.string(),
   }),
   s3: z.object({
     accessKeyId: z.string(),
@@ -22,10 +19,7 @@ const config = configSchema.parse({
     port: process.env.PORT,
   },
   db: {
-    url: process.env.MONGO_URL,
-    username: process.env.MONGO_USERNAME,
-    password: process.env.MONGO_PASSWORD,
-    authSource: process.env.MONGO_AUTH_SOURCE,
+    url: process.env.DATABASE_URL,
   },
   s3: {
     accessKeyId: process.env.S3_ACCESS_KEY,

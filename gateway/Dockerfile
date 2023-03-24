@@ -9,6 +9,9 @@ RUN yarn --frozen-lockfile
 # Copy the source files into the image
 COPY . .
 
+# Generate prisma client
+RUN yarn prisma:generate
+
 EXPOSE 8080
 
 CMD yarn start

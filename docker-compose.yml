@@ -6,27 +6,26 @@ services:
       - mongodb
       - minio
     environment:
-      MONGO_URL: 'mongodb:27017'
-      MONGO_USERNAME: 'user'
-      MONGO_PASSWORD: 'secret'
-      MONGO_AUTH_SOURCE: 'vidstream'
-      S3_ACCESS_KEY: 'root'
-      S3_SECRET_KEY: 'secret'
-      S3_ENDPOINT: 'http://minio:9000'
+      DATABASE_URL: mongodb://root:supersecret@mongodb:27017/vidstream?authSource=admin&directConnection=true
+      S3_ACCESS_KEY: root
+      S3_SECRET_KEY: supersecret
+      S3_ENDPOINT: http://minio:9000
     volumes:
       - ./gateway:/app
+      - /app/node_modules/
     ports:
       - 8080:8080
   mongodb:
-    image: mongo
+    image: bitnami/mongodb:latest
     restart: on-failure
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: secret
-      MONGO_INITDB_DATABASE: vidstream
+      MONGODB_ADVERTISED_HOSTNAME: 127.0.0.1
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_ROOT_USER: root
+      MONGODB_ROOT_PASSWORD: supersecret
+      MONGODB_REPLICA_SET_KEY: replicasetkey123
     volumes:
-      - mongodb_data:/data/db
-      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - mongodb_data:/bitnami/mongodb
     ports:
       - 27017:27017
   minio:
@@ -35,7 +34,7 @@ services:
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: root
-      MINIO_ROOT_PASSWORD: secret
+      MINIO_ROOT_PASSWORD: supersecret
     volumes:
       - minio_data:/data
     ports:
