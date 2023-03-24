@@ -10,8 +10,10 @@ const configSchema = z.object({
     password: z.string(),
     authSource: z.string(),
   }),
-  jwt: z.object({
-    secret: z.string(),
+  s3: z.object({
+    accessKeyId: z.string(),
+    secretAccessKey: z.string(),
+    endpoint: z.string(),
   }),
 });
 
@@ -25,8 +27,10 @@ const config = configSchema.parse({
     password: process.env.MONGO_PASSWORD,
     authSource: process.env.MONGO_AUTH_SOURCE,
   },
-  jwt: {
-    secret: process.env.JWT_SECRET,
+  s3: {
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_KEY,
+    endpoint: process.env.S3_ENDPOINT,
   },
 });
 

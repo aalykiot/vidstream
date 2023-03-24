@@ -10,7 +10,9 @@ services:
       MONGO_USERNAME: 'vidstreamUser'
       MONGO_PASSWORD: '6yeuWT5FJ3Xc9FvxfcGJcfG625eLLn'
       MONGO_AUTH_SOURCE: 'vidstream'
-      JWT_SECRET: 'A79PSLTW6VAdKpGrNbZs96HHHCgUHb'
+      S3_ACCESS_KEY: 'root'
+      S3_SECRET_KEY: 'Vw33MNExX8g8cSc6HrLpVpdBW'
+      S3_ENDPOINT: 'http://minio:9000'
     volumes:
       - ./gateway:/app
     ports:
