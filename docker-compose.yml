@@ -4,6 +4,7 @@ services:
     build: ./gateway
     depends_on:
       - mongodb
+      - minio
     environment:
       MONGO_URL: 'mongodb:27017'
       MONGO_USERNAME: 'vidstreamUser'
@@ -26,6 +27,20 @@ services:
       - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     ports:
       - 27017:27017
+  minio:
+    image: quay.io/minio/minio:latest
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: Vw33MNExX8g8cSc6HrLpVpdBW
+    volumes:
+      - minio_data:/data
+    ports:
+      - 9000:9000
+      - 9001:9001
 volumes:
   mongodb_data:
+    driver: local
+  minio_data:
     driver: local
