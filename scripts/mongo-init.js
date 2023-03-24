@@ -1,7 +1,5 @@
 db.createUser({
-  user: 'vidstreamUser',
-  pwd: '6yeuWT5FJ3Xc9FvxfcGJcfG625eLLn',
+  user: 'user',
+  pwd: 'secret',
   roles: [{ role: 'readWrite', db: 'vidstream' }]
 });
-
-db.createCollection('videos');
