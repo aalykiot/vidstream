@@ -20,7 +20,7 @@ const s3 = new S3Client({
 async function init() {
   // Get all existing buckets.
   const buckets = await s3.send(new ListBucketsCommand({}));
-  const bucketNames = (buckets?.Buckets ?? []).map((item) => item.Name);
+  const bucketNames = (buckets?.Buckets || []).map((item) => item.Name);
 
   // Create a bucket for `videos` if does not exist.
   if (!bucketNames.includes('videos')) {

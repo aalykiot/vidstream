@@ -13,6 +13,7 @@ model Video {
   active    Boolean  @default(false)
   previews  String[]
   step      Int?
+  mimetype  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

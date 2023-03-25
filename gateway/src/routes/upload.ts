@@ -1,10 +1,9 @@
-import { promisify } from 'util';
-import { createWriteStream } from 'fs';
-import { pipeline } from 'stream';
+import _ from 'lodash';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { nanoid } from 'nanoid';
-
-const pump = promisify(pipeline);
+import { PrismaClient } from '@prisma/client';
+import { Upload } from '@aws-sdk/lib-storage';
+import { s3 } from '../s3/client';
 
 const acceptableMimeTypes = [
   'video/avi',
@@ -14,6 +13,8 @@ const acceptableMimeTypes = [
   'video/ogg',
   'video/webm',
 ];
+
+const prisma = new PrismaClient();
 
 // The controller for the /upload endpoint.
 async function onUpload(request: FastifyRequest, reply: FastifyReply) {
@@ -34,14 +35,40 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
     return;
   }
 
-  // Generate a new ID for the video.
+  // Create a unique reference for the video.
   const id = `vid_${nanoid()}`;
-  const extension = mimetype.split('/')[1];
 
-  // TODO: Upload file to AWS S3 bucket.
-  await pump(data.file, createWriteStream(`./tmp/${id}.${extension}`));
+  // Upload video file to s3 bucket.
+  const s3Upload = new Upload({
+    client: s3,
+    tags: [],
+    queueSize: 1,
+    leavePartsOnError: false,
+    params: {
+      Bucket: 'videos',
+      Key: id,
+      Body: data.file,
+      ContentType: mimetype,
+    },
+  });
 
-  reply.send({ success: true, id });
+  await s3Upload.done();
+
+  // Add video metadata information to database.
+  const videoDocument = await prisma.video.create({
+    data: {
+      reference: id,
+      previews: [],
+      mimetype,
+    },
+  });
+
+  // Remove DB's `id` field and replace it with the `reference` field.
+  const videoMetadata = _.mapKeys(_.omit(videoDocument, ['id']), (_val, key) =>
+    key === 'reference' ? 'id' : key
+  );
+
+  reply.send(videoMetadata);
 }
 
 export const autoPrefix = '/upload';
