@@ -58,6 +58,7 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   const videoDocument = await prisma.video.create({
     data: {
       reference: id,
+      size: data.file.bytesRead,
       previews: [],
       mimetype,
     },

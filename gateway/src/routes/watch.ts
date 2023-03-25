@@ -1,0 +1,92 @@
+import { Readable } from 'stream';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { PrismaClient } from '@prisma/client';
+import { s3 } from '../s3/client';
+
+type RequestParams = { id: string };
+
+const prisma = new PrismaClient();
+
+// The controller for the /watch endpoint.
+async function onWatch(request: FastifyRequest, reply: FastifyReply) {
+  // Get video ID from the url.
+  const { id } = request.params as RequestParams;
+
+  if (id === '') {
+    const err = new Error(`You need to provide a video ID.`);
+    reply.status(400).send(err);
+    return;
+  }
+
+  // Check if video exists.
+  const videoDocument = await prisma.video.findFirst({
+    where: { reference: id },
+  });
+
+  if (videoDocument === null) {
+    const err = new Error(`Video does not exists.`);
+    reply.status(404).send(err);
+    return;
+  }
+
+  const range = request.headers.range;
+
+  if (range !== undefined) {
+    // Extract start and end value from range header.
+    const [startValue, endValue] = range.replace(/bytes=/, '').split('-');
+    const size = videoDocument.size;
+
+    const start = parseInt(startValue, 10);
+    const end = endValue ? parseInt(endValue, 10) : size - 1;
+
+    // Handle unavailable range request.
+    if (start >= size || end >= size) {
+      const err = new Error(`The range you requested is unavailable.`);
+      reply.header('Content-Range', `bytes */${size}`);
+      reply.status(416).send(err);
+      return;
+    }
+
+    // Get requested range of the video file from the S3 bucket.
+    const cmd = new GetObjectCommand({
+      Bucket: 'videos',
+      Key: id,
+      Range: `bytes=${start}-${end}`,
+    });
+
+    const video = await s3.send(cmd);
+
+    // Stream video to client.
+    reply.header('Content-Range', `bytes ${start}-${end}/${size}`);
+    reply.header('Accept-Ranges', 'bytes');
+    reply.header('Content-Length', end - start + 1);
+    reply.header('Content-Type', video.ContentType);
+
+    return reply.send(video.Body as Readable);
+  }
+
+  // Start streaming video object from the s3 bucket.
+  const cmd = new GetObjectCommand({
+    Bucket: 'videos',
+    Key: id,
+  });
+
+  const video = await s3.send(cmd);
+
+  // Stream video file to client.
+  return reply
+    .header('Content-Type', video.ContentType)
+    .send(video.Body as Readable);
+}
+
+export const autoPrefix = '/watch';
+
+export default async function (fastify: FastifyInstance) {
+  // Register the route to fastify.
+  fastify.route({
+    method: 'GET',
+    url: '/:id',
+    handler: onWatch,
+  });
+}

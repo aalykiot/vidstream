@@ -10,6 +10,7 @@ datasource db {
 model Video {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   reference String   @unique
+  size      Int
   active    Boolean  @default(false)
   previews  String[]
   step      Int?
