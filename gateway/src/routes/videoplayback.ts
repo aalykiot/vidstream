@@ -1,16 +1,15 @@
 import { Readable } from 'stream';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { s3 } from '../s3/client';
 
 type RequestParams = { id: string };
 
 const prisma = new PrismaClient();
 
-// The controller for the /watch endpoint.
-async function onWatch(request: FastifyRequest, reply: FastifyReply) {
-  // Get video ID from the url.
+async function onVideoPlayback(request: FastifyRequest, reply: FastifyReply) {
+  // Get video ID from query params.
   const { id } = request.params as RequestParams;
 
   if (id === '') {
@@ -19,7 +18,7 @@ async function onWatch(request: FastifyRequest, reply: FastifyReply) {
     return;
   }
 
-  // Check if video exists.
+  // Find requested video in database.
   const videoDocument = await prisma.video.findFirst({
     where: { reference: id },
   });
@@ -80,13 +79,13 @@ async function onWatch(request: FastifyRequest, reply: FastifyReply) {
     .send(video.Body as Readable);
 }
 
-export const autoPrefix = '/watch';
+export const autoPrefix = '/api/video-playback';
 
 export default async function (fastify: FastifyInstance) {
   // Register the route to fastify.
   fastify.route({
     method: 'GET',
     url: '/:id',
-    handler: onWatch,
+    handler: onVideoPlayback,
   });
 }

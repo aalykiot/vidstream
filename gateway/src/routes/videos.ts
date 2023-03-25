@@ -5,6 +5,47 @@ import { PrismaClient } from '@prisma/client';
 import { Upload } from '@aws-sdk/lib-storage';
 import { s3 } from '../s3/client';
 
+const prisma = new PrismaClient();
+
+async function onVideos(_request: FastifyRequest, reply: FastifyReply) {
+  // Get all available videos.
+  const videosList = await prisma.video.findMany({ where: { active: true } });
+
+  // Map documents to JSON array.
+  const videos = videosList.map((document) =>
+    _.mapKeys(_.omit(document, ['id']), (_val, key) =>
+      key === 'reference' ? 'id' : key
+    )
+  );
+
+  reply.send(videos);
+}
+
+type RequestParams = { id: string };
+
+async function onSpecificVideo(request: FastifyRequest, reply: FastifyReply) {
+  // Get ID from the url.
+  const { id } = request.params as RequestParams;
+
+  // Find video in the database.
+  const videoDocument = await prisma.video.findFirst({
+    where: { reference: id },
+  });
+
+  if (videoDocument === null) {
+    const err = new Error(`Video does not exists.`);
+    reply.status(404).send(err);
+    return;
+  }
+
+  // Map to JSON object.
+  const video = _.mapKeys(_.omit(videoDocument, ['id']), (_val, key) =>
+    key === 'reference' ? 'id' : key
+  );
+
+  reply.send(video);
+}
+
 const acceptableMimeTypes = [
   'video/avi',
   'video/mpeg',
@@ -14,9 +55,6 @@ const acceptableMimeTypes = [
   'video/webm',
 ];
 
-const prisma = new PrismaClient();
-
-// The controller for the /upload endpoint.
 async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   // Process a single file.
   const data = await request.file();
@@ -72,13 +110,27 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   reply.send(videoMetadata);
 }
 
-export const autoPrefix = '/upload';
+export const autoPrefix = '/api/videos';
 
 export default async function (fastify: FastifyInstance) {
-  // Register the route to fastify.
+  // Register the '/videos' route to fastify.
+  fastify.route({
+    method: 'GET',
+    url: '/',
+    handler: onVideos,
+  });
+
+  // Register the '/videos/<ID>' route to fastify.
+  fastify.route({
+    method: 'GET',
+    url: '/:id',
+    handler: onSpecificVideo,
+  });
+
+  // Register the '/videos/upload' route to fastify.
   fastify.route({
     method: 'POST',
-    url: '/',
+    url: '/upload',
     handler: onUpload,
   });
 }
