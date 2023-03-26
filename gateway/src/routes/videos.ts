@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { PrismaClient } from '@prisma/client';
 import { Upload } from '@aws-sdk/lib-storage';
 import { s3, VIDEOS_BUCKET } from '../s3/client';
+import { channel, VIDEO_PROCESS_QUEUE } from '../async-queue/client';
 
 const prisma = new PrismaClient();
 
@@ -102,6 +103,10 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
       mimetype,
     },
   });
+
+  // Publish video-process message to queue.
+  const message = JSON.stringify({ reference: id });
+  channel.sendToQueue(VIDEO_PROCESS_QUEUE, Buffer.from(message));
 
   // Remove DB's `id` field and replace it with the `reference` field.
   const videoMetadata = _.mapKeys(_.omit(videoDocument, ['id']), (_val, key) =>
