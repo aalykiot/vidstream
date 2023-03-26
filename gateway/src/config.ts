@@ -12,6 +12,9 @@ const configSchema = z.object({
     secretAccessKey: z.string(),
     endpoint: z.string(),
   }),
+  queue: z.object({
+    url: z.string(),
+  }),
 });
 
 const config = configSchema.parse({
@@ -25,6 +28,9 @@ const config = configSchema.parse({
     accessKeyId: process.env.S3_ACCESS_KEY,
     secretAccessKey: process.env.S3_SECRET_KEY,
     endpoint: process.env.S3_ENDPOINT,
+  },
+  queue: {
+    url: process.env.QUEUE_URL,
   },
 });
 

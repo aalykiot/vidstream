@@ -2,7 +2,7 @@ import { Readable } from 'stream';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { s3 } from '../s3/client';
+import { s3, VIDEOS_BUCKET } from '../s3/client';
 
 type RequestParams = { id: string };
 
@@ -49,7 +49,7 @@ async function onVideoPlayback(request: FastifyRequest, reply: FastifyReply) {
 
     // Get requested range of the video file from the S3 bucket.
     const cmd = new GetObjectCommand({
-      Bucket: 'videos',
+      Bucket: VIDEOS_BUCKET,
       Key: id,
       Range: `bytes=${start}-${end}`,
     });
@@ -67,7 +67,7 @@ async function onVideoPlayback(request: FastifyRequest, reply: FastifyReply) {
 
   // Start streaming video object from the s3 bucket.
   const cmd = new GetObjectCommand({
-    Bucket: 'videos',
+    Bucket: VIDEOS_BUCKET,
     Key: id,
   });
 

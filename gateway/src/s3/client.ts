@@ -5,6 +5,9 @@ import {
   ListBucketsCommand,
 } from '@aws-sdk/client-s3';
 
+const VIDEOS_BUCKET = 'videos';
+const PREVIEWS_BUCKET = 'previews';
+
 const { accessKeyId, secretAccessKey, endpoint } = config.s3;
 
 const s3 = new S3Client({
@@ -23,16 +26,16 @@ async function init() {
   const bucketNames = (buckets?.Buckets || []).map((item) => item.Name);
 
   // Create a bucket for `videos` if does not exist.
-  if (!bucketNames.includes('videos')) {
-    const cmd = new CreateBucketCommand({ Bucket: 'videos' });
+  if (!bucketNames.includes(VIDEOS_BUCKET)) {
+    const cmd = new CreateBucketCommand({ Bucket: VIDEOS_BUCKET });
     await s3.send(cmd);
   }
 
   // Create a bucket for `previews` if does not exist.
-  if (!bucketNames.includes('previews')) {
-    const cmd = new CreateBucketCommand({ Bucket: 'previews' });
+  if (!bucketNames.includes(PREVIEWS_BUCKET)) {
+    const cmd = new CreateBucketCommand({ Bucket: PREVIEWS_BUCKET });
     await s3.send(cmd);
   }
 }
 
-export { s3, init };
+export { s3, init, VIDEOS_BUCKET, PREVIEWS_BUCKET };

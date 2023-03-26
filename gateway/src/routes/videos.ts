@@ -3,13 +3,14 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { nanoid } from 'nanoid';
 import { PrismaClient } from '@prisma/client';
 import { Upload } from '@aws-sdk/lib-storage';
-import { s3 } from '../s3/client';
+import { s3, VIDEOS_BUCKET } from '../s3/client';
 
 const prisma = new PrismaClient();
 
 async function onVideos(_request: FastifyRequest, reply: FastifyReply) {
   // Get all available videos.
-  const videosList = await prisma.video.findMany({ where: { active: true } });
+  const opts = { where: { available: true } };
+  const videosList = await prisma.video.findMany(opts);
 
   // Map documents to JSON array.
   const videos = videosList.map((document) =>
@@ -83,7 +84,7 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
     queueSize: 1,
     leavePartsOnError: false,
     params: {
-      Bucket: 'videos',
+      Bucket: VIDEOS_BUCKET,
       Key: id,
       Body: data.file,
       ContentType: mimetype,
