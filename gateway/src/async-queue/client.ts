@@ -8,7 +8,7 @@ let channel: Channel;
 
 async function connect() {
   // Connect to message broker.
-  connection = await amqplib.connect(config.queue.url);
+  connection = await amqplib.connect(config.amqp.url);
   channel = await connection.createChannel();
 
   // Make sure the queue exists.

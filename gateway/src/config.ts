@@ -12,7 +12,7 @@ const configSchema = z.object({
     secretAccessKey: z.string(),
     endpoint: z.string(),
   }),
-  queue: z.object({
+  amqp: z.object({
     url: z.string(),
   }),
 });
@@ -29,8 +29,8 @@ const config = configSchema.parse({
     secretAccessKey: process.env.S3_SECRET_KEY,
     endpoint: process.env.S3_ENDPOINT,
   },
-  queue: {
-    url: process.env.QUEUE_URL,
+  amqp: {
+    url: process.env.AMQP_URL,
   },
 });
 
