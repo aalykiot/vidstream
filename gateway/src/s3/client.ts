@@ -18,6 +18,8 @@ const s3 = new S3Client({
   endpoint,
   region: 'us-east-1',
   forcePathStyle: true,
+  maxAttempts: 6,
+  retryMode: 'standard',
 });
 
 async function init() {
