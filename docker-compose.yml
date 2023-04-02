@@ -17,11 +17,11 @@ services:
       - /app/node_modules/
     ports:
       - 8080:8080
-  video-processing:
-    build: ./video-processing
+  frameflow:
+    build: ./frameflow
     command: sh -c "cargo watch -x run"
     volumes:
-      - ./video-processing:/app
+      - ./frameflow:/app
       - /app/target/
   mongodb:
     image: bitnami/mongodb:latest
