@@ -60,8 +60,9 @@ services:
       RABBITMQ_DEFAULT_USER: root
       RABBITMQ_DEFAULT_PASS: supersecret
     volumes:
+      - ./config/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
       - rabbitmq_data:/var/lib/rabbitmq/
-      - rabbitmq_logs:/var/log/rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
@@ -71,6 +72,4 @@ volumes:
   minio_data:
     driver: local
   rabbitmq_data:
-    driver: local
-  rabbitmq_logs:
     driver: local
