@@ -105,7 +105,7 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   });
 
   // Publish video-process message to queue.
-  const message = JSON.stringify({ reference: id });
+  const message = JSON.stringify({ reference: id, mimetype });
   channel.sendToQueue(VIDEO_PROCESS_QUEUE, Buffer.from(message));
 
   // Remove DB's `id` field and replace it with the `reference` field.
