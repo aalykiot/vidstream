@@ -1,3 +1,7 @@
+mod constants;
+
+use constants::CONSUMER_TAG;
+use constants::VIDEO_PROCESS_QUEUE;
 use ffmpeg_next as ffmpeg;
 use futures_lite::stream::StreamExt;
 use lapin::message::Delivery;
@@ -11,15 +15,13 @@ use serde::Serialize;
 use std::env;
 use std::error::Error;
 use tokio;
-use tracing::error;
-
-const VIDEO_PROCESS_QUEUE: &str = "video-process-queue";
-const CONSUMER_TAG: &str = "frameflow";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct EventData {
-    /// Video reference stored in S3.
+    /// Video reference stored in s3.
     reference: String,
+    // Basically the video extension.
+    mimetype: String,
 }
 
 #[derive(Debug)]
@@ -67,7 +69,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         tokio::spawn(async move {
             // Process the event. If an error is encountered, log it.
             if let Err(e) = handler.run(delivery.unwrap()).await {
-                error!(cause = ?e, "event error");
+                eprintln!("Event error: {e}");
             }
         });
     }
