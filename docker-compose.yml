@@ -20,6 +20,11 @@ services:
   frameflow:
     build: ./frameflow
     command: sh -c "cargo watch -x run"
+    depends_on:
+      - minio
+      - rabbitmq
+    environment:
+      AMQP_URL: amqp://root:supersecret@rabbitmq:5672
     volumes:
       - ./frameflow:/app
       - /app/target/
