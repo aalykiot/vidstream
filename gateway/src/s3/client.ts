@@ -8,7 +8,7 @@ import {
 const VIDEOS_BUCKET = 'videos';
 const PREVIEWS_BUCKET = 'previews';
 
-const { accessKeyId, secretAccessKey, endpoint } = config.s3;
+const { accessKeyId, secretAccessKey, endpoint } = config.aws;
 
 const s3 = new S3Client({
   credentials: {

@@ -7,7 +7,7 @@ const configSchema = z.object({
   db: z.object({
     url: z.string(),
   }),
-  s3: z.object({
+  aws: z.object({
     accessKeyId: z.string(),
     secretAccessKey: z.string(),
     endpoint: z.string(),
@@ -24,10 +24,10 @@ const config = configSchema.parse({
   db: {
     url: process.env.DATABASE_URL,
   },
-  s3: {
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_KEY,
-    endpoint: process.env.S3_ENDPOINT,
+  aws: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    endpoint: process.env.AWS_ENDPOINT,
   },
   amqp: {
     url: process.env.AMQP_URL,

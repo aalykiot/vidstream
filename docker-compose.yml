@@ -8,9 +8,9 @@ services:
       - rabbitmq
     environment:
       DATABASE_URL: mongodb://root:supersecret@mongodb:27017/vidstream?authSource=admin&directConnection=true
-      S3_ACCESS_KEY: root
-      S3_SECRET_KEY: supersecret
-      S3_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: root
+      AWS_SECRET_ACCESS_KEY: supersecret
+      AWS_ENDPOINT: http://minio:9000
       AMQP_URL: amqp://root:supersecret@rabbitmq:5672
     volumes:
       - ./gateway:/app
@@ -24,6 +24,10 @@ services:
       - minio
       - rabbitmq
     environment:
+      AWS_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: root
+      AWS_SECRET_ACCESS_KEY: supersecret
+      AWS_REGION: us-east-1
       AMQP_URL: amqp://root:supersecret@rabbitmq:5672
     volumes:
       - ./frameflow:/app
