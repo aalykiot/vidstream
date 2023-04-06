@@ -1,37 +1,52 @@
 mod constants;
+mod frames;
 
 use aws_sdk_s3 as s3;
 use constants::CONSUMER_TAG;
+use constants::PREVIEWS_BUCKET;
+use constants::VIDEOS_BUCKET;
+use constants::VIDEO_METADATA_QUEUE;
 use constants::VIDEO_PROCESS_QUEUE;
-use ffmpeg_next as ffmpeg;
+use frames::generate_previews;
 use futures_lite::stream::StreamExt;
 use lapin::message::Delivery;
 use lapin::options::BasicAckOptions;
 use lapin::options::BasicConsumeOptions;
+use lapin::options::BasicPublishOptions;
 use lapin::types::FieldTable;
+use lapin::BasicProperties;
+use lapin::Channel;
 use lapin::Connection;
 use lapin::ConnectionProperties;
+use nanoid::nanoid;
 use serde::Deserialize;
 use serde::Serialize;
 use std::env;
 use std::error::Error;
 use std::sync::Arc;
-use tokio;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct EventData {
-    /// Video reference stored in s3.
+    // Video reference stored in s3.
     reference: String,
     // Basically the video extension.
     mimetype: String,
 }
 
-const VIDEOS_BUCKET: &str = "videos";
+#[derive(Debug, Serialize, Deserialize, Default)]
+struct EventPublishData {
+    // The distance between 2 previews (in seconds).
+    step: i32,
+    // Preview IDs stored in s3.
+    previews: Vec<String>,
+}
 
 #[derive(Debug)]
 struct Handler {
-    /// AWS s3 client.
+    /// A Shared AWS s3 client.
     client: Arc<s3::Client>,
+    /// A Shared AMQP channel.
+    channel: Arc<Channel>,
 }
 
 impl Handler {
@@ -40,7 +55,7 @@ impl Handler {
         let data = delivery.data.as_slice();
         let data: EventData = serde_json::from_slice(data)?;
 
-        let filename_ext = data.mimetype.split("/").last().unwrap();
+        let filename_ext = data.mimetype.split('/').last().unwrap();
         let filename = format!("/tmp/{}.{}", &data.reference, filename_ext);
 
         // Get object from s3 bucket (as stream).
@@ -58,14 +73,63 @@ impl Handler {
         let mut file = tokio::fs::OpenOptions::new()
             .write(true)
             .create(true)
-            .open(filename)
+            .open(&filename)
             .await?;
 
         // Save the video bytes into the file.
         tokio::io::copy(&mut stream, &mut file).await?;
 
+        // Generate previews from video (this might take a while).
+        let fname = filename.clone();
+        let previews = tokio::task::spawn_blocking(move || generate_previews(&fname)).await??;
+
+        // Create unique IDs for previews.
+        let step = previews.step_in_seconds;
+        let previews: Vec<(String, Vec<u8>)> = previews
+            .frames
+            .iter()
+            .map(|frame| (nanoid!(), frame.clone()))
+            .collect();
+
+        let mut metadata = EventPublishData {
+            step,
+            previews: vec![],
+        };
+
+        for (id, bytes) in previews {
+            // Upload preview (object) to s3.
+            self.client
+                .put_object()
+                .body(bytes.into())
+                .bucket(PREVIEWS_BUCKET)
+                .key(&id)
+                .send()
+                .await?;
+
+            // Update the publish event.
+            metadata.previews.push(id);
+        }
+
+        // Convert struct into a JSON string.
+        let payload = serde_json::to_string(&metadata)?;
+
+        // Publish metadata event.
+        self.channel
+            .basic_publish(
+                "",
+                VIDEO_METADATA_QUEUE,
+                BasicPublishOptions::default(),
+                payload.as_bytes(),
+                BasicProperties::default(),
+            )
+            .await?
+            .await?;
+
         // Ack the message.
         delivery.ack(BasicAckOptions::default()).await?;
+
+        // Remove video from `tmp/` directory (clean up).
+        tokio::fs::remove_file(&filename).await?;
 
         Ok(())
     }
@@ -74,7 +138,7 @@ impl Handler {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // Initialize FFMPEG.
-    ffmpeg::init().unwrap();
+    frames::init();
 
     // Connect to AWS (aka MinIO) services.
     let endpoint = std::env::var("AWS_ENDPOINT").unwrap();
@@ -89,7 +153,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Connect to the AMQP (aka rabbitmq) broker.
     let addr = env::var("AMQP_URL").unwrap();
     let connection = Connection::connect(&addr, ConnectionProperties::default()).await?;
-    let channel = connection.create_channel().await?;
+    let channel = Arc::new(connection.create_channel().await?);
 
     // Create a consumer.
     let mut consumer = channel
@@ -106,12 +170,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         // Create an event handler.
         let handler = Handler {
             client: client_s3.clone(),
+            channel: channel.clone(),
         };
 
         tokio::spawn(async move {
             // Process the event. If an error is encountered, log it.
             if let Err(e) = handler.run(delivery.unwrap()).await {
-                eprintln!("Event error: {e}");
+                eprintln!("Err: {e:?}");
             }
         });
     }
