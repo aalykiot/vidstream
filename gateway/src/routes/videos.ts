@@ -76,7 +76,7 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   }
 
   // Create a unique reference for the video.
-  const id = `vid_${nanoid()}`;
+  const id = nanoid();
 
   // Upload video file to s3 bucket.
   const s3Upload = new Upload({
