@@ -35,6 +35,8 @@ struct EventData {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 struct EventPublishData {
+    // Video reference stored in s3.
+    reference: String,
     // The distance between two previews (in seconds).
     step: i32,
     // Preview IDs stored in s3.
@@ -91,6 +93,7 @@ impl Handler {
             .collect();
 
         let mut metadata = EventPublishData {
+            reference: data.reference,
             step,
             previews: vec![],
         };

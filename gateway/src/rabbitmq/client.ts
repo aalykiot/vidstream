@@ -2,6 +2,7 @@ import amqplib, { Connection, Channel } from 'amqplib';
 import config from '../config';
 
 const VIDEO_PROCESS_QUEUE = 'video-process-queue';
+const VIDEO_METADATA_QUEUE = 'video-metadata-queue';
 
 let connection: Connection;
 let channel: Channel;
@@ -33,4 +34,4 @@ async function connect() {
   await channel.assertQueue(VIDEO_PROCESS_QUEUE);
 }
 
-export { channel, connect, VIDEO_PROCESS_QUEUE };
+export { channel, connect, VIDEO_PROCESS_QUEUE, VIDEO_METADATA_QUEUE };

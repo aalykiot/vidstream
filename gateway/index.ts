@@ -5,7 +5,8 @@ import Fastify from 'fastify';
 import App from './src/app';
 import config from './src/config';
 import * as s3 from './src/s3/client';
-import * as queue from './src/async-queue/client';
+import * as queue from './src/rabbitmq/client';
+import * as events from './src/events';
 
 async function start() {
   // Initialize fastify app.
@@ -15,6 +16,9 @@ async function start() {
   // Connect to external services.
   await s3.init();
   await queue.connect();
+
+  // Subscribe to desired events.
+  events.subscribe();
 
   // Start server.
   await fastify.register(App);

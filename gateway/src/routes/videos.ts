@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import { PrismaClient } from '@prisma/client';
 import { Upload } from '@aws-sdk/lib-storage';
 import { s3, VIDEOS_BUCKET } from '../s3/client';
-import { channel, VIDEO_PROCESS_QUEUE } from '../async-queue/client';
+import { channel, VIDEO_PROCESS_QUEUE } from '../rabbitmq/client';
 
 const prisma = new PrismaClient();
 
