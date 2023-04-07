@@ -35,7 +35,7 @@ struct EventData {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 struct EventPublishData {
-    // The distance between 2 previews (in seconds).
+    // The distance between two previews (in seconds).
     step: i32,
     // Preview IDs stored in s3.
     previews: Vec<String>,
@@ -51,14 +51,14 @@ struct Handler {
 
 impl Handler {
     pub async fn run(&self, delivery: Delivery) -> Result<(), Box<dyn Error>> {
-        // Get data from event.
+        // Parse data from the incoming event.
         let data = delivery.data.as_slice();
         let data: EventData = serde_json::from_slice(data)?;
 
         let filename_ext = data.mimetype.split('/').last().unwrap();
         let filename = format!("/tmp/{}.{}", &data.reference, filename_ext);
 
-        // Get object from s3 bucket (as stream).
+        // Fetch the video object from the S3 bucket.
         let mut stream = self
             .client
             .get_object()
@@ -69,21 +69,20 @@ impl Handler {
             .body
             .into_async_read();
 
-        // Crate the file destination.
+        // Open the destination file and write the video stream to it.
         let mut file = tokio::fs::OpenOptions::new()
             .write(true)
             .create(true)
             .open(&filename)
             .await?;
 
-        // Save the video bytes into the file.
         tokio::io::copy(&mut stream, &mut file).await?;
 
-        // Generate previews from video (this might take a while).
+        // Generate preview frames from the video.
         let fname = filename.clone();
         let previews = tokio::task::spawn_blocking(move || generate_previews(&fname)).await??;
 
-        // Create unique IDs for previews.
+        // Assign unique IDs to the preview frames.
         let step = previews.step_in_seconds;
         let previews: Vec<(String, Vec<u8>)> = previews
             .frames
@@ -97,7 +96,7 @@ impl Handler {
         };
 
         for (id, bytes) in previews {
-            // Upload preview (object) to s3.
+            // Upload each preview frame as a separate object in the S3 bucket
             self.client
                 .put_object()
                 .body(bytes.into())
@@ -106,14 +105,12 @@ impl Handler {
                 .send()
                 .await?;
 
-            // Update the publish event.
             metadata.previews.push(id);
         }
 
-        // Convert struct into a JSON string.
+        // Convert metadata into JSON string format and publish it.
         let payload = serde_json::to_string(&metadata)?;
 
-        // Publish metadata event.
         self.channel
             .basic_publish(
                 "",
@@ -125,7 +122,7 @@ impl Handler {
             .await?
             .await?;
 
-        // Ack the message.
+        // Acknowledge the received message.
         delivery.ack(BasicAckOptions::default()).await?;
 
         // Remove video from `tmp/` directory (clean up).
@@ -140,7 +137,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Initialize FFMPEG.
     frames::init();
 
-    // Connect to AWS (aka MinIO) services.
+    // Retrieve endpoint url and AWS config, create a new S3 client.
     let endpoint = std::env::var("AWS_ENDPOINT").unwrap();
     let config = aws_config::from_env().endpoint_url(&endpoint).load().await;
     let config_s3 = s3::config::Builder::from(&config)
@@ -150,12 +147,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let client_s3 = s3::Client::from_conf(config_s3);
     let client_s3 = Arc::new(client_s3);
 
-    // Connect to the AMQP (aka rabbitmq) broker.
+    // Retrieve the AMQP url, create a connection and a channel.
     let addr = env::var("AMQP_URL").unwrap();
     let connection = Connection::connect(&addr, ConnectionProperties::default()).await?;
     let channel = Arc::new(connection.create_channel().await?);
 
-    // Create a consumer.
+    // Create a new consumer for the video-process queue.
     let mut consumer = channel
         .basic_consume(
             VIDEO_PROCESS_QUEUE,
