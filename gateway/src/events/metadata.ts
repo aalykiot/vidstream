@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { ConsumeMessage } from 'amqplib';
 import { PrismaClient } from '@prisma/client';
 import { channel } from '../rabbitmq/client';
+import { eventBus } from '../app';
 
 type Metadata = {
   reference: string;
@@ -25,7 +26,7 @@ export async function handleEvent(message: ConsumeMessage | null) {
   const thumbnail = metadata.previews[index];
 
   // Update the metadata database (MongoDB) with the received data.
-  await prisma.video.update({
+  const videoDocument = await prisma.video.update({
     where: { reference: metadata.reference },
     data: {
       step: metadata.step,
@@ -34,6 +35,13 @@ export async function handleEvent(message: ConsumeMessage | null) {
       thumbnail,
     },
   });
+
+  const video = _.mapKeys(_.omit(videoDocument, ['id']), (_val, key) =>
+    key === 'reference' ? 'id' : key
+  );
+
+  // Notify connected clients.
+  eventBus.emit('broadcast', video);
 
   // Acknowledge message reception.
   channel.ack(message);
