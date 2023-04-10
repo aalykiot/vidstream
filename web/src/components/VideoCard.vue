@@ -1,6 +1,7 @@
 <script setup>
 import { defineProps } from 'vue';
 import EyeIcon from './icons/EyeIcon.vue';
+import { toMinuteSeconds } from '../utils/time';
 
 const props = defineProps(['thumbnail', 'duration', 'title', 'views']);
 </script>
@@ -15,12 +16,12 @@ const props = defineProps(['thumbnail', 'duration', 'title', 'views']);
       <div
         class="bg-gray-800 py-0.5 px-3 text-sm rounded-md inline absolute bottom-3 right-3"
       >
-        {{ props.duration }}
+        {{ toMinuteSeconds(props.duration) }}
       </div>
     </div>
     <div class="flex py-4 items-center">
       <div class="flex-1 text-gray-400 text-sm group-hover:text-white">
-        {{ props.title }}
+        {{ props.title.toUpperCase() }}
       </div>
       <div class="font-bold text-sm">{{ props.views }}</div>
       <EyeIcon class="w-5 h-5 ml-1" />

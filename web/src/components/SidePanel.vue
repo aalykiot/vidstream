@@ -9,7 +9,7 @@ import HeartIcon from './icons/HeartIcon.vue';
 </script>
 
 <template>
-  <div class="w-20 border-r border-gray-800 flex flex-col text-gray-300">
+  <div class="w-20 border-r border-gray-800 flex flex-col text-gray-300 panel">
     <div class="h-20 flex justify-center items-center">
       <PlayIcon class="w-14 h-14 text-green-400" />
     </div>
@@ -27,3 +27,15 @@ import HeartIcon from './icons/HeartIcon.vue';
     </div>
   </div>
 </template>
+
+<style scoped>
+.panel {
+  display: none;
+}
+
+@media only screen and (min-width: 570px) {
+  .panel {
+    display: inherit;
+  }
+}
+</style>

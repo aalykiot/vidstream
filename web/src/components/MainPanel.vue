@@ -14,7 +14,7 @@ const props = defineProps(['videos']);
         <span class="ml-2">Videos</span>
       </span>
     </div>
-    <div class="flex-1 text-white mx-5 videos-grid">
+    <div class="flex-1 text-white mx-5 videos-grid mb-6">
       <VideoCard
         v-for="(video, idx) in props.videos"
         :key="idx"
