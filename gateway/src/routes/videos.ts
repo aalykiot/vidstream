@@ -13,6 +13,9 @@ async function onVideos(_request: FastifyRequest, reply: FastifyReply) {
   const opts = { where: { available: true } };
   const videosList = await prisma.video.findMany(opts);
 
+  // Create a timestamp token.
+  const token = new Date().getTime();
+
   // Map documents to JSON array.
   const videos = videosList.map((document) =>
     _.mapKeys(_.omit(document, ['id']), (_val, key) =>
@@ -20,7 +23,7 @@ async function onVideos(_request: FastifyRequest, reply: FastifyReply) {
     )
   );
 
-  reply.send(videos);
+  reply.send({ token, videos });
 }
 
 type RequestParams = { id: string };
