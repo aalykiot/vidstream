@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { nanoid } from 'nanoid';
+import { faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
 import { Upload } from '@aws-sdk/lib-storage';
 import { s3, VIDEOS_BUCKET } from '../s3/client';
@@ -101,6 +102,7 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   const videoDocument = await prisma.video.create({
     data: {
       reference: id,
+      title: faker.lorem.words(_.random(2, 4)),
       size: data.file.bytesRead,
       previews: [],
       mimetype,

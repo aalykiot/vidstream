@@ -17,6 +17,8 @@ pub fn init() {
 pub struct FrameResult {
     /// The distance between two frames.
     pub step_in_seconds: i32,
+    /// Duration in seconds.
+    pub duration: f64,
     /// The generated frames as PNG images.
     pub frames: Vec<Vec<u8>>,
 }
@@ -42,6 +44,9 @@ pub fn generate_previews(path: &String) -> Result<FrameResult> {
         decoder.height(),
         scaling::flag::Flags::BILINEAR,
     )?;
+
+    // Get video duration in seconds.
+    let duration = stream.duration() as f64 * f64::from(stream.time_base());
 
     // We want to extract one frame every 5 seconds.
     let frame_rate = stream.avg_frame_rate();
@@ -70,6 +75,7 @@ pub fn generate_previews(path: &String) -> Result<FrameResult> {
 
     Ok(FrameResult {
         step_in_seconds: 5,
+        duration,
         frames,
     })
 }

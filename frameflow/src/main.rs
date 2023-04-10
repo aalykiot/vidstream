@@ -37,6 +37,8 @@ struct EventData {
 struct EventPublishData {
     // Video reference stored in s3.
     reference: String,
+    // Duration in seconds.
+    duration: f64,
     // The distance between two previews (in seconds).
     step: i32,
     // Preview IDs stored in s3.
@@ -86,6 +88,8 @@ impl Handler {
 
         // Assign unique IDs to the preview frames.
         let step = previews.step_in_seconds;
+        let duration = previews.duration;
+
         let previews: Vec<(String, Vec<u8>)> = previews
             .frames
             .iter()
@@ -94,6 +98,7 @@ impl Handler {
 
         let mut metadata = EventPublishData {
             reference: data.reference,
+            duration,
             step,
             previews: vec![],
         };

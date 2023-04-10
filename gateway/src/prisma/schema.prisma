@@ -10,7 +10,10 @@ datasource db {
 model Video {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   reference String   @unique
+  title     String
+  duration  Float?
   size      Int
+  views     Int      @default(0)
   available Boolean  @default(false)
   previews  String[]
   step      Int?

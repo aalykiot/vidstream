@@ -6,6 +6,7 @@ import { eventBus } from '../app';
 
 type Metadata = {
   reference: string;
+  duration: number;
   step: number;
   previews: string[];
 };
@@ -29,9 +30,10 @@ export async function handleEvent(message: ConsumeMessage | null) {
   const videoDocument = await prisma.video.update({
     where: { reference: metadata.reference },
     data: {
+      available: true,
+      duration: metadata.duration,
       step: metadata.step,
       previews: metadata.previews,
-      available: true,
       thumbnail,
     },
   });
