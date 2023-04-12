@@ -1,0 +1,9 @@
+.panel {
+  display: none;
+}
+
+@media only screen and (min-width: 570px) {
+  .panel {
+    display: inherit;
+  }
+}

@@ -1,16 +1,22 @@
 module.exports = {
   env: {
-    browser: true,
     node: true,
+    browser: true,
+  },
+  parser: '@babel/eslint-parser',
+  parserOptions: {
+    sourceType: 'module',
+    requireConfigFile: false,
+    babelOptions: {
+      presets: ['@babel/preset-react'],
+    },
   },
   extends: [
     'eslint:recommended',
-    'plugin:vue/vue3-recommended',
-    'plugin:vue/vue3-essential',
-    'plugin:vue/vue3-strongly-recommended',
+    'plugin:solid/recommended',
     'plugin:prettier/recommended',
   ],
-  plugins: ['prettier'],
+  plugins: ['solid', 'prettier'],
   rules: {
     // override/add rules settings here, such as:
     // 'vue/no-unused-vars': 'error'

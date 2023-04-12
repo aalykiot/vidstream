@@ -1,0 +1,29 @@
+/* For mobile phones: */
+.videosGrid {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: repeat(1, 1fr);
+  row-gap: 20px;
+  column-gap: 20px;
+}
+
+/* For tablets: */
+@media only screen and (min-width: 850px) {
+  .videosGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* For laptops: */
+@media only screen and (min-width: 1170px) {
+  .videosGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* For desktop: */
+@media only screen and (min-width: 1500px) {
+  .videosGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
