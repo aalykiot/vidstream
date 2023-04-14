@@ -1,3 +1,5 @@
+import { For } from 'solid-js';
+import classnames from 'classnames';
 import BlocksIcon from './icons/BlocksIcon';
 import VideoCard from './VideoCard';
 import styles from './MainPanel.module.css';
@@ -11,7 +13,7 @@ function MainPanel(props) {
           <span class="ml-2">Videos</span>
         </span>
       </div>
-      <div class={`flex-1 text-white mx-5 mb-6 ${styles.videosGrid}`}>
+      <div class={classnames('flex-1 text-white mx-5 mb-6', styles.videosGrid)}>
         <For each={props.videos}>
           {(video) => (
             <VideoCard

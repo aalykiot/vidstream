@@ -12,6 +12,7 @@
     "lint:fix": "eslint --ext .js,.jsx . --fix"
   },
   "dependencies": {
+    "classnames": "^2.3.2",
     "solid-js": "^1.6.10"
   },
   "devDependencies": {

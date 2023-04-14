@@ -1,3 +1,4 @@
+import classnames from 'classnames';
 import PlayIcon from './icons/PlayIcon';
 import SettingsIcon from './icons/SettingsIcon';
 import LogoutIcon from './icons/LogoutIcon';
@@ -10,7 +11,10 @@ import styles from './SidePanel.module.css';
 function VideoCard() {
   return (
     <div
-      class={`w-20 border-r border-gray-800 flex flex-col text-gray-300 ${styles.panel}`}
+      class={classnames(
+        'w-20 border-r border-gray-800 flex flex-col text-gray-300',
+        styles.panel
+      )}
     >
       <div class="h-20 flex justify-center items-center">
         <PlayIcon class="w-14 h-14 text-green-400" />
