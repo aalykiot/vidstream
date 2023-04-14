@@ -13,7 +13,6 @@ model Video {
   title     String
   duration  Float?
   size      Int
-  views     Int      @default(0)
   available Boolean  @default(false)
   previews  String[]
   step      Int?

@@ -6,12 +6,16 @@ services:
       - mongodb
       - minio
       - rabbitmq
+      - redis
     environment:
       DATABASE_URL: mongodb://root:supersecret@mongodb:27017/vidstream?authSource=admin&directConnection=true
       AWS_ACCESS_KEY_ID: root
       AWS_SECRET_ACCESS_KEY: supersecret
       AWS_ENDPOINT: http://minio:9000
       AMQP_URL: amqp://root:supersecret@rabbitmq:5672
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: supersecret
     volumes:
       - ./gateway:/app
       - /app/node_modules/
@@ -70,10 +74,20 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+  redis:
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning --requirepass supersecret
+    volumes:
+      - redis_data:/data
 volumes:
   mongodb_data:
     driver: local
   minio_data:
     driver: local
   rabbitmq_data:
+    driver: local
+  redis_data:
     driver: local

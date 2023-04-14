@@ -15,6 +15,11 @@ const configSchema = z.object({
   amqp: z.object({
     url: z.string(),
   }),
+  redis: z.object({
+    host: z.string(),
+    port: z.string(),
+    password: z.string(),
+  }),
 });
 
 const config = configSchema.parse({
@@ -31,6 +36,11 @@ const config = configSchema.parse({
   },
   amqp: {
     url: process.env.AMQP_URL,
+  },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    password: process.env.REDIS_PASSWORD,
   },
 });
 

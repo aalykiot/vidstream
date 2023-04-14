@@ -6,6 +6,7 @@ import App from './src/app';
 import config from './src/config';
 import * as s3 from './src/s3/client';
 import * as queue from './src/rabbitmq/client';
+import * as redis from './src/redis/client';
 import * as events from './src/events';
 
 async function start() {
@@ -15,6 +16,7 @@ async function start() {
 
   // Connect to external services.
   await s3.init();
+  await redis.connect();
   await queue.connect();
 
   // Subscribe to desired events.

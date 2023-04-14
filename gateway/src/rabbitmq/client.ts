@@ -1,15 +1,12 @@
 import amqplib, { Connection, Channel } from 'amqplib';
 import config from '../config';
+import { wait } from '../utils/time';
 
 const VIDEO_PROCESS_QUEUE = 'video-process-queue';
 const VIDEO_METADATA_QUEUE = 'video-metadata-queue';
 
 let connection: Connection;
 let channel: Channel;
-
-async function wait(ms: number) {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 // Connect to the message broker using an exponential back-off strategy.
 async function connectWithRetries(backoff = 1) {
