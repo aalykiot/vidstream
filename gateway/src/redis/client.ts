@@ -4,7 +4,7 @@ import config from '../config';
 
 const { host, port, password } = config.redis;
 
-const client = createClient({
+const redis = createClient({
   socket: {
     host,
     port: Number.parseInt(port),
@@ -16,7 +16,7 @@ const client = createClient({
 async function connect(backoff = 1) {
   // Try connect to message broker.
   try {
-    await client.connect();
+    await redis.connect();
   } catch (e) {
     // Connect has failed too many times, accept defeat.
     if (backoff > 64) throw e;
@@ -27,4 +27,4 @@ async function connect(backoff = 1) {
   }
 }
 
-export { connect, client };
+export { connect, redis };
