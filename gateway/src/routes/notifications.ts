@@ -1,7 +1,7 @@
-import _ from 'lodash';
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import { SocketStream } from '@fastify/websocket';
 import { PrismaClient } from '@prisma/client';
+import { redis } from '../redis/client';
 import { eventBus } from '../app';
 
 type QueryParams = { token: string };
@@ -26,12 +26,28 @@ async function onNotifications(connection: SocketStream, req: FastifyRequest) {
     return;
   }
 
-  // Convert the video documents into a JSON array.
-  const videos = videosList.map((document) =>
-    _.mapKeys(_.omit(document, ['id']), (_val, key) =>
-      key === 'reference' ? 'id' : key
-    )
-  );
+  // Get view counts for all videos.
+  const references = videosList.map(({ reference }) => reference);
+  const viewCounts = await redis.mGet(references);
+
+  // Parse the view counts from Redis, defaulting to 0 if not found.
+  const views = viewCounts.map((count) => parseInt(count ?? '0', 10));
+
+  // Map documents to JSON array.
+  const videos = videosList.map((video, idx) => ({
+    id: video.reference,
+    title: video.title,
+    duration: video.duration,
+    size: video.size,
+    available: video.available,
+    views: views[idx],
+    previews: video.previews,
+    step: video.step,
+    thumbnail: video.thumbnail,
+    mimetype: video.mimetype,
+    createdAt: video.createdAt,
+    updatedAt: video.updatedAt,
+  }));
 
   // Send the video list to the client.
   connection.socket.send(videos);

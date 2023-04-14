@@ -27,7 +27,7 @@ export async function handleEvent(message: ConsumeMessage | null) {
   const thumbnail = metadata.previews[index];
 
   // Update the metadata database (MongoDB) with the received data.
-  const videoDocument = await prisma.video.update({
+  const document = await prisma.video.update({
     where: { reference: metadata.reference },
     data: {
       available: true,
@@ -38,11 +38,23 @@ export async function handleEvent(message: ConsumeMessage | null) {
     },
   });
 
-  const video = _.mapKeys(_.omit(videoDocument, ['id']), (_val, key) =>
-    key === 'reference' ? 'id' : key
-  );
+  // Map document into a JSON object.
+  const video = {
+    id: document.reference,
+    title: document.title,
+    duration: document.duration,
+    size: document.size,
+    available: document.available,
+    views: 0,
+    previews: document.previews,
+    step: document.step,
+    thumbnail: document.thumbnail,
+    mimetype: document.mimetype,
+    createdAt: document.createdAt,
+    updatedAt: document.updatedAt,
+  };
 
-  // Notify connected clients.
+  // Notify connected clients about the video.
   eventBus.emit('broadcast', video);
 
   // Acknowledge message reception.

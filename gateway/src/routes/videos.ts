@@ -18,7 +18,7 @@ async function onVideos(_request: FastifyRequest, reply: FastifyReply) {
   // Create a timestamp token.
   const token = new Date().getTime();
 
-  if (_.isEmpty(videosList)) {
+  if (videosList.length === 0) {
     reply.send({ token, videos: [] });
     return;
   }
@@ -150,10 +150,21 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   const message = JSON.stringify({ reference: id, mimetype });
   channel.sendToQueue(VIDEO_PROCESS_QUEUE, Buffer.from(message));
 
-  // Remove DB's `id` field and replace it with the `reference` field.
-  const video = _.mapKeys(_.omit(document, ['id']), (_val, key) =>
-    key === 'reference' ? 'id' : key
-  );
+  // Map document into a JSON object.
+  const video = {
+    id: document.reference,
+    title: document.title,
+    duration: document.duration,
+    size: document.size,
+    available: document.available,
+    views: 0,
+    previews: document.previews,
+    step: document.step,
+    thumbnail: document.thumbnail,
+    mimetype: document.mimetype,
+    createdAt: document.createdAt,
+    updatedAt: document.updatedAt,
+  };
 
   reply.send(video);
 }

@@ -30,6 +30,12 @@ async function onVideoPlayback(request: FastifyRequest, reply: FastifyReply) {
     return;
   }
 
+  if (!videoDocument.available) {
+    const err = new Error(`Video is not yet available.`);
+    reply.status(404).send(err);
+    return;
+  }
+
   const range = request.headers.range;
 
   if (range !== undefined) {
