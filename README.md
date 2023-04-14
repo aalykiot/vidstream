@@ -7,6 +7,8 @@ An on-demand video streaming platform written in [Node.js](https://nodejs.org/en
 - MongoDB
 - MinIO
 - RabbitMQ
+- Redis
+- Solid.js
 
 ## Architecture
 
