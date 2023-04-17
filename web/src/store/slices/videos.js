@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { setToken } from './tokenSlice';
+import { setToken } from './token';
 
 const BASE_URL = 'http://localhost:8080/api';
 
