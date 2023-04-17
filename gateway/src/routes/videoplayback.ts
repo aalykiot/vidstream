@@ -3,7 +3,6 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { s3, VIDEOS_BUCKET } from '../s3/client';
-import { redis } from '../redis/client';
 
 type RequestParams = { id: string };
 
@@ -63,9 +62,6 @@ async function onVideoPlayback(request: FastifyRequest, reply: FastifyReply) {
 
     const video = await s3.send(cmd);
 
-    // Update view count in redis.
-    await redis.incr(id);
-
     // Stream video to client.
     reply.header('Content-Range', `bytes ${start}-${end}/${size}`);
     reply.header('Accept-Ranges', 'bytes');
@@ -82,9 +78,6 @@ async function onVideoPlayback(request: FastifyRequest, reply: FastifyReply) {
   });
 
   const video = await s3.send(cmd);
-
-  // Update view count in redis.
-  await redis.incr(id);
 
   // Stream video file to client.
   return reply
