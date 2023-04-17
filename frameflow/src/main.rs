@@ -24,6 +24,7 @@ use serde::Serialize;
 use std::env;
 use std::error::Error;
 use std::sync::Arc;
+use tokio::sync::Semaphore;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct EventData {
@@ -47,9 +48,9 @@ struct EventPublishData {
 
 #[derive(Debug)]
 struct Handler {
-    /// A Shared AWS s3 client.
+    /// Shared AWS s3 client.
     client: Arc<s3::Client>,
-    /// A Shared AMQP channel.
+    /// Shared AMQP channel.
     channel: Arc<Channel>,
 }
 
@@ -170,8 +171,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .await?;
 
-    // Start listening for video-process events.
-    while let Some(delivery) = consumer.next().await {
+    // Note: Due to high memory usage during video download/processing
+    // and past instances of encountering a "137 error" from Docker,
+    // the number of concurrent tasks will be limited to two at a time.
+    let semaphore = Arc::new(Semaphore::new(2));
+
+    loop {
+        // Wait for a permit to become available.
+        let permit = semaphore.clone().acquire_owned().await?;
+        let delivery = consumer.next().await.unwrap();
+
         // Create an event handler.
         let handler = Handler {
             client: client_s3.clone(),
@@ -183,8 +192,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             if let Err(e) = handler.run(delivery.unwrap()).await {
                 eprintln!("Err: {e:?}");
             }
+            drop(permit);
         });
     }
-
-    Ok(())
 }
