@@ -1,7 +1,7 @@
 import { ReactComponent as EyeIcon } from './icons/eye-icon.svg';
 import { toMinuteSeconds } from '../utils/time';
 
-const VideoCard = ({ title, thumbnail, duration, views }) => {
+function VideoCard({ title, thumbnail, duration, views }) {
   return (
     <div className="cursor-pointer group">
       <div className="relative">
@@ -22,6 +22,6 @@ const VideoCard = ({ title, thumbnail, duration, views }) => {
       </div>
     </div>
   );
-};
+}
 
 export default VideoCard;

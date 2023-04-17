@@ -8,7 +8,7 @@ import { ReactComponent as CardIcon } from './icons/card-icon.svg';
 import { ReactComponent as MessageIcon } from './icons/message-icon.svg';
 import { ReactComponent as HeartIcon } from './icons/heart-icon.svg';
 
-const SidePanel = () => {
+function SidePanel() {
   return (
     <div
       className={classnames(
@@ -31,6 +31,6 @@ const SidePanel = () => {
       </div>
     </div>
   );
-};
+}
 
 export default SidePanel;

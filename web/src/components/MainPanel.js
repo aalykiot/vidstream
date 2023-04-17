@@ -1,11 +1,12 @@
 import classnames from 'classnames';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import styles from './styles/MainPanel.module.css';
 import VideoCard from './VideoCard';
 import { ReactComponent as BlocksIcon } from './icons/blocks-icon.svg';
 import { getVideos } from '../store/videosSlice';
 
-const MainPanel = () => {
+function MainPanel() {
   const videos = useSelector(getVideos);
   return (
     <div className="flex-1 overflow-y-scroll">
@@ -18,18 +19,19 @@ const MainPanel = () => {
       <div
         className={classnames('flex-1 text-white mx-5 mb-6', styles.videosGrid)}
       >
-        {videos.map((video, idx) => (
-          <VideoCard
-            key={idx}
-            thumbnail={video.thumbnail}
-            duration={video.duration}
-            title={video.title}
-            views={video.views}
-          />
+        {videos.map((video) => (
+          <Link to={`/watch/${video.id}`} key={video.id}>
+            <VideoCard
+              thumbnail={video.thumbnail}
+              duration={video.duration}
+              title={video.title}
+              views={video.views}
+            />
+          </Link>
         ))}
       </div>
     </div>
   );
-};
+}
 
 export default MainPanel;

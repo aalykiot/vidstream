@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import SidePanel from './components/SidePanel';
-import MainPanel from './components/MainPanel';
-import { fetchVideosAsync, getStatus } from './store/videosSlice';
+import SidePanel from '../components/SidePanel';
+import MainPanel from '../components/MainPanel';
+import { fetchVideosAsync, getStatus } from '../store/videosSlice';
 
-const App = () => {
+function BrowsePage() {
   const dispatch = useDispatch();
   const status = useSelector(getStatus);
 
@@ -21,6 +21,6 @@ const App = () => {
       <MainPanel />
     </div>
   );
-};
+}
 
-export default App;
+export default BrowsePage;
