@@ -2,23 +2,31 @@ module.exports = {
   env: {
     node: true,
     browser: true,
+    es2021: true,
   },
-  parser: '@babel/eslint-parser',
   parserOptions: {
+    ecmaVersion: 'latest',
     sourceType: 'module',
-    requireConfigFile: false,
-    babelOptions: {
-      presets: ['@babel/preset-react'],
+    ecmaFeatures: {
+      jsx: true,
     },
   },
   extends: [
     'eslint:recommended',
-    'plugin:solid/recommended',
+    'airbnb/hooks',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
+    'plugin:import/recommended',
     'plugin:prettier/recommended',
   ],
-  plugins: ['solid', 'prettier'],
+  plugins: ['react', 'prettier'],
+  settings: {
+    react: {
+      version: '18.x',
+    },
+  },
   rules: {
-    // override/add rules settings here, such as:
-    // 'vue/no-unused-vars': 'error'
+    'react/prop-types': 'off',
+    'react-hooks/exhaustive-deps': 'off',
   },
 };
