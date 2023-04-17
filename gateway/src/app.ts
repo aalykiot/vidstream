@@ -14,7 +14,7 @@ export default async function (fastify: FastifyInstance, opts: unknown) {
   // Enables the use of CORS in a Fastify application.
   // https://en.wikipedia.org/wiki/Cross-origin_resource_sharing
   await fastify.register(Cors, {
-    origin: false,
+    origin: '*',
   });
 
   const FILE_SIZE_LIMIT = 1000000000; // 1GB.

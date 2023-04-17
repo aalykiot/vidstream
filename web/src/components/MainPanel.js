@@ -1,9 +1,12 @@
 import classnames from 'classnames';
-import VideoCard from './VideoCard';
+import { useSelector } from 'react-redux';
 import styles from './styles/MainPanel.module.css';
+import VideoCard from './VideoCard';
 import { ReactComponent as BlocksIcon } from './icons/blocks-icon.svg';
+import { getVideos } from '../store/videosSlice';
 
-const MainPanel = ({ videos }) => {
+const MainPanel = () => {
+  const videos = useSelector(getVideos);
   return (
     <div className="flex-1 overflow-y-scroll">
       <div className="h-20 flex items-center">

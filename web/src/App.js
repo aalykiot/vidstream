@@ -1,14 +1,24 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import SidePanel from './components/SidePanel';
 import MainPanel from './components/MainPanel';
-import data from './data/videos.json';
+import { fetchVideosAsync, getStatus } from './store/videosSlice';
 
 const App = () => {
-  const [videos] = useState(data);
+  const dispatch = useDispatch();
+  const status = useSelector(getStatus);
+
+  // Load videos from the API.
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchVideosAsync());
+    }
+  }, []);
+
   return (
     <div className="flex bg-gray-900 h-screen">
       <SidePanel />
-      <MainPanel videos={videos} />
+      <MainPanel />
     </div>
   );
 };

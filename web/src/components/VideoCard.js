@@ -15,7 +15,7 @@ const VideoCard = ({ title, thumbnail, duration, views }) => {
       </div>
       <div className="flex py-4 items-center">
         <div className="flex-1 text-gray-400 text-sm group-hover:text-white">
-          {title}
+          {String(title).toUpperCase()}
         </div>
         <div className="font-bold text-sm">{views}</div>
         <EyeIcon className="w-5 h-5 ml-1" />
