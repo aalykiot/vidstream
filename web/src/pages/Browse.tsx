@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import SidePanel from '../components/SidePanel';
-import MainPanel from '../components/MainPanel';
+import VideoGroup from '../components/VideoGroup';
 import { fetchVideosAsync, getStatus } from '../store/features/videos';
 import { AppDispatch } from '../store/store';
 
@@ -19,7 +19,7 @@ function BrowsePage() {
   return (
     <div className="flex bg-gray-900 h-screen">
       <SidePanel />
-      <MainPanel />
+      <VideoGroup />
     </div>
   );
 }
