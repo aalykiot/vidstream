@@ -1,12 +1,12 @@
 import classnames from 'classnames';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import styles from './styles/MainPanel.module.css';
 import VideoCard from './VideoCard';
+import styles from './styles/VideoGroup.module.css';
 import { ReactComponent as BlocksIcon } from './icons/blocks-icon.svg';
 import { getVideos } from '../store/features/videos';
 
-function MainPanel() {
+function VideoGroup() {
   const videos = useSelector(getVideos);
   return (
     <div className="flex-1 overflow-y-scroll">
@@ -34,4 +34,4 @@ function MainPanel() {
   );
 }
 
-export default MainPanel;
+export default VideoGroup;
