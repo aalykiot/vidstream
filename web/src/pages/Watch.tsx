@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useParams, Link } from 'react-router-dom';
 import { ReactComponent as LeftArrowIcon } from '../components/icons/left-arrow-icon.svg';
 import { ReactComponent as DownloadIcon } from '../components/icons/download-icon.svg';
-import { AppDispatch } from '../store';
+import { AppDispatch } from '../store/store';
 import {
   getSource,
   getMetadata,

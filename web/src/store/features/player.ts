@@ -3,7 +3,7 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit';
-import type { RootState } from '../index';
+import type { RootState } from '../store';
 
 const BASE_URL = 'http://localhost:8080/api';
 
@@ -50,21 +50,28 @@ export const fetchMetadataAsync = createAsyncThunk(
 
 type Status = 'idle' | 'pending' | 'succeeded' | 'failed';
 
+type Value<T> = {
+  status: Status;
+  value: T | null;
+};
+
 type InitState = {
   source: string | null;
-  metadata: Video | null;
-  metadataStatus: Status;
-  trickPlay: string[];
-  trickPlayStatus: Status;
+  metadata: Value<Video>;
+  trickPlay: Value<string[]>;
   error: SerializedError | null;
 };
 
 const initialState = {
   source: null,
-  metadata: null,
-  metadataStatus: 'idle',
-  trickPlay: [],
-  trickPlayStatus: 'idle',
+  metadata: {
+    status: 'idle',
+    value: null,
+  },
+  trickPlay: {
+    status: 'idle',
+    value: null,
+  },
   error: null,
 } as InitState;
 
@@ -76,26 +83,26 @@ const playerSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(fetchMetadataAsync.pending, (state) => {
-      state.metadataStatus = 'pending';
+      state.metadata.status = 'pending';
     });
     builder.addCase(fetchMetadataAsync.fulfilled, (state, action) => {
-      state.metadataStatus = 'succeeded';
-      state.metadata = action.payload;
+      state.metadata.status = 'succeeded';
+      state.metadata.value = action.payload;
       state.source = `${BASE_URL}/video-playback/${action.payload.id}`;
     });
     builder.addCase(fetchMetadataAsync.rejected, (state, action) => {
-      state.metadataStatus = 'failed';
+      state.metadata.status = 'failed';
       state.error = action.error;
     });
     builder.addCase(fetchTrickPlayAsync.pending, (state) => {
-      state.trickPlayStatus = 'pending';
+      state.trickPlay.status = 'pending';
     });
     builder.addCase(fetchTrickPlayAsync.fulfilled, (state, action) => {
-      state.trickPlayStatus = 'succeeded';
-      state.trickPlay = action.payload;
+      state.trickPlay.status = 'succeeded';
+      state.trickPlay.value = action.payload;
     });
     builder.addCase(fetchTrickPlayAsync.rejected, (state, action) => {
-      state.trickPlayStatus = 'failed';
+      state.trickPlay.status = 'failed';
       state.error = action.error;
     });
   },
@@ -103,12 +110,10 @@ const playerSlice = createSlice({
 
 /* SELECTORS */
 
-export const getSource = (state: RootState) => state.player.source;
-export const getMetadata = (state: RootState) => state.player.metadata;
-export const getTrickPlay = (state: RootState) => state.player.trickPlay;
-export const getMetadataStatus = (state: RootState) =>
-  state.player.metadataStatus;
-export const getTrickPlayStatus = (state: RootState) =>
-  state.player.trickPlayStatus;
+export const getSource = (s: RootState) => s.player.source;
+export const getMetadata = (s: RootState) => s.player.metadata.value;
+export const getMetadataStatus = (s: RootState) => s.player.metadata.status;
+export const getTrickPlay = (s: RootState) => s.player.trickPlay.value;
+export const getTrickPlayStatus = (s: RootState) => s.player.trickPlay.status;
 
 export default playerSlice.reducer;

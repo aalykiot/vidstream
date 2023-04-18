@@ -4,7 +4,7 @@ import {
   SerializedError,
 } from '@reduxjs/toolkit';
 import { setToken } from './token';
-import type { RootState } from '../index';
+import type { RootState } from '../store';
 
 type Video = {
   id: string;
@@ -44,12 +44,12 @@ export const fetchVideosAsync = createAsyncThunk(
 /* STATE */
 
 type InitState = {
-  entities: Video[];
+  value: Video[];
   status: 'idle' | 'pending' | 'succeeded' | 'failed';
   error: SerializedError | null;
 };
 
-const initialState = { entities: [], status: 'idle', error: null } as InitState;
+const initialState = { value: [], status: 'idle', error: null } as InitState;
 
 /* REDUCERS */
 
@@ -63,7 +63,7 @@ const videosSlice = createSlice({
     });
     builder.addCase(fetchVideosAsync.fulfilled, (state, action) => {
       state.status = 'succeeded';
-      state.entities = action.payload;
+      state.value = action.payload;
     });
     builder.addCase(fetchVideosAsync.rejected, (state, action) => {
       state.status = 'failed';
@@ -74,7 +74,7 @@ const videosSlice = createSlice({
 
 /* SELECTORS */
 
-export const getVideos = (state: RootState) => state.videos.entities;
+export const getVideos = (state: RootState) => state.videos.value;
 export const getStatus = (state: RootState) => state.videos.status;
 
 export default videosSlice.reducer;

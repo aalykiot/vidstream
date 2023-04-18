@@ -10,7 +10,7 @@ import {
 import BrowsePage from './pages/Browse';
 import WatchPage from './pages/Watch';
 import ErrorPage from './pages/Error';
-import store from './store';
+import store from './store/store';
 
 const router = createBrowserRouter([
   {
