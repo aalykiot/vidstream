@@ -1,8 +1,4 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  SerializedError,
-} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 
 const BASE_URL = 'http://localhost:8080/api';
@@ -59,7 +55,7 @@ type InitState = {
   source: string | null;
   metadata: Value<Video>;
   trickPlay: Value<string[]>;
-  error: SerializedError | null;
+  error: string | undefined | null;
 };
 
 const initialState = {
@@ -92,7 +88,7 @@ const playerSlice = createSlice({
     });
     builder.addCase(fetchMetadataAsync.rejected, (state, action) => {
       state.metadata.status = 'failed';
-      state.error = action.error;
+      state.error = action.error.message;
     });
     builder.addCase(fetchTrickPlayAsync.pending, (state) => {
       state.trickPlay.status = 'pending';
@@ -103,7 +99,7 @@ const playerSlice = createSlice({
     });
     builder.addCase(fetchTrickPlayAsync.rejected, (state, action) => {
       state.trickPlay.status = 'failed';
-      state.error = action.error;
+      state.error = action.error.message;
     });
   },
 });

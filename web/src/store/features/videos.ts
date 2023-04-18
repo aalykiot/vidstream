@@ -1,8 +1,4 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  SerializedError,
-} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { setToken } from './token';
 import type { RootState } from '../store';
 
@@ -46,7 +42,7 @@ export const fetchVideosAsync = createAsyncThunk(
 type InitState = {
   value: Video[];
   status: 'idle' | 'pending' | 'succeeded' | 'failed';
-  error: SerializedError | null;
+  error: string | undefined | null;
 };
 
 const initialState = { value: [], status: 'idle', error: null } as InitState;
@@ -67,7 +63,7 @@ const videosSlice = createSlice({
     });
     builder.addCase(fetchVideosAsync.rejected, (state, action) => {
       state.status = 'failed';
-      state.error = action.error;
+      state.error = action.error?.message;
     });
   },
 });
