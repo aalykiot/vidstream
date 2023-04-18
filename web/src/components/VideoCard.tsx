@@ -1,16 +1,24 @@
 import { ReactComponent as EyeIcon } from './icons/eye-icon.svg';
-import { toMinuteSeconds } from '../utils/time';
+import timeUtils from '../utils/time';
 
-function VideoCard({ title, thumbnail, duration, views }) {
+type Props = {
+  title: string;
+  thumbnail: string;
+  duration: number;
+  views: number;
+};
+
+function VideoCard({ title, thumbnail, duration, views }: Props) {
   return (
     <div className="cursor-pointer group">
       <div className="relative">
         <img
           src={thumbnail}
+          alt="The thumbnail of the video"
           className="rounded-md h-60 w-full object-cover brightness-90 group-hover:brightness-100"
         />
         <div className="bg-gray-800 py-0.5 px-3 text-sm rounded-md inline absolute bottom-3 right-3">
-          {toMinuteSeconds(duration)}
+          {timeUtils.toMinuteSeconds(duration)}
         </div>
       </div>
       <div className="flex py-4 items-center">

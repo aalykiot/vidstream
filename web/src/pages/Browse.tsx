@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import SidePanel from '../components/SidePanel';
 import MainPanel from '../components/MainPanel';
-import { fetchVideosAsync, getStatus } from '../store//slices/videos';
+import { fetchVideosAsync, getStatus } from '../store/features/videos';
+import { AppDispatch } from '../store';
 
 function BrowsePage() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const status = useSelector(getStatus);
 
   // Load videos from the API.

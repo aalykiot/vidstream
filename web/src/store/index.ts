@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
-import tokenReducer from './slices/token';
-import playerReducer from './slices/player';
-import videosReducer from './slices/videos';
+import tokenReducer from './features/token';
+import playerReducer from './features/player';
+import videosReducer from './features/videos';
 
 const store = configureStore({
   reducer: {
@@ -11,5 +11,9 @@ const store = configureStore({
   },
   devTools: process.env.NODE_ENV !== 'production',
 });
+
+export type RootState = ReturnType<typeof store.getState>;
+
+export type AppDispatch = typeof store.dispatch;
 
 export default store;

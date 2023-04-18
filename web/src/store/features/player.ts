@@ -1,32 +1,63 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+  createSlice,
+  createAsyncThunk,
+  SerializedError,
+} from '@reduxjs/toolkit';
+import type { RootState } from '../index';
 
 const BASE_URL = 'http://localhost:8080/api';
 
 /* ASYNC THUNKS */
 
-export const fetchMetadataAsync = createAsyncThunk(
-  'player/fetchMetadata',
-  async (id, thunkAPI) => {
-    const response = await fetch(`${BASE_URL}/videos/${id}`);
-    const video = await response.json();
-    thunkAPI.dispatch(fetchTrickPlayAsync(video.previews));
-    return video;
-  }
-);
-
 export const fetchTrickPlayAsync = createAsyncThunk(
   'player/fetchTrickPlay',
-  async (previews) => {
+  async (previews: string[]) => {
     const trickPlay = previews.map(async (id) => {
       const response = await fetch(`${BASE_URL}/previews/${id}`);
       const data = await response.blob();
       return URL.createObjectURL(data);
     });
-    return await Promise.all(trickPlay);
+    return Promise.all(trickPlay);
+  }
+);
+
+type Video = {
+  id: string;
+  title: string;
+  duration: number;
+  size: number;
+  available: boolean;
+  views: number;
+  previews: string[];
+  step: number;
+  thumbnail: string;
+  mimetype: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const fetchMetadataAsync = createAsyncThunk(
+  'player/fetchMetadata',
+  async (id: string, thunkAPI) => {
+    const response = await fetch(`${BASE_URL}/videos/${id}`);
+    const video = (await response.json()) as Video;
+    thunkAPI.dispatch(fetchTrickPlayAsync(video.previews));
+    return video;
   }
 );
 
 /* STATE */
+
+type Status = 'idle' | 'pending' | 'succeeded' | 'failed';
+
+type InitState = {
+  source: string | null;
+  metadata: Video | null;
+  metadataStatus: Status;
+  trickPlay: string[];
+  trickPlayStatus: Status;
+  error: SerializedError | null;
+};
 
 const initialState = {
   source: null,
@@ -35,13 +66,14 @@ const initialState = {
   trickPlay: [],
   trickPlayStatus: 'idle',
   error: null,
-};
+} as InitState;
 
 /* REDUCERS */
 
 const playerSlice = createSlice({
   name: 'player',
   initialState,
+  reducers: {},
   extraReducers: (builder) => {
     builder.addCase(fetchMetadataAsync.pending, (state) => {
       state.metadataStatus = 'pending';
@@ -71,10 +103,12 @@ const playerSlice = createSlice({
 
 /* SELECTORS */
 
-export const getSource = (state) => state.player.source;
-export const getMetadata = (state) => state.player.metadata;
-export const getMetadataStatus = (state) => state.player.metadataStatus;
-export const getTrickPlay = (state) => state.player.trickPlay;
-export const getTrickPlayStatus = (state) => state.player.trickPlayStatus;
+export const getSource = (state: RootState) => state.player.source;
+export const getMetadata = (state: RootState) => state.player.metadata;
+export const getTrickPlay = (state: RootState) => state.player.trickPlay;
+export const getMetadataStatus = (state: RootState) =>
+  state.player.metadataStatus;
+export const getTrickPlayStatus = (state: RootState) =>
+  state.player.trickPlayStatus;
 
 export default playerSlice.reducer;

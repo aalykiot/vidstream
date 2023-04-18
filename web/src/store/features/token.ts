@@ -2,7 +2,9 @@ import { createSlice } from '@reduxjs/toolkit';
 
 /* STATE */
 
-const initialState = null;
+type InitState = number | null;
+
+const initialState = null as InitState;
 
 /* REDUCERS */
 

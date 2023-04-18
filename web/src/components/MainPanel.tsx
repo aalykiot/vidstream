@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import styles from './styles/MainPanel.module.css';
 import VideoCard from './VideoCard';
 import { ReactComponent as BlocksIcon } from './icons/blocks-icon.svg';
-import { getVideos } from '../store/slices/videos';
+import { getVideos } from '../store/features/videos';
 
 function MainPanel() {
   const videos = useSelector(getVideos);

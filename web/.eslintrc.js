@@ -4,7 +4,9 @@ module.exports = {
     browser: true,
     es2021: true,
   },
+  parser: '@typescript-eslint/parser',
   parserOptions: {
+    project: './tsconfig.json',
     ecmaVersion: 'latest',
     sourceType: 'module',
     ecmaFeatures: {
@@ -12,21 +14,20 @@ module.exports = {
     },
   },
   extends: [
-    'eslint:recommended',
-    'airbnb/hooks',
+    'airbnb',
+    'airbnb-typescript',
     'plugin:react/recommended',
     'plugin:react/jsx-runtime',
-    'plugin:import/recommended',
+    'plugin:import/typescript',
     'plugin:prettier/recommended',
   ],
-  plugins: ['react', 'prettier'],
+  plugins: ['react', 'prettier', '@typescript-eslint'],
   settings: {
     react: {
       version: '18.x',
     },
   },
   rules: {
-    'react/prop-types': 'off',
-    'react-hooks/exhaustive-deps': 'off',
+    'no-param-reassign': ['error', { props: false }],
   },
 };
