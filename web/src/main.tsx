@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-import './main.css';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -11,6 +10,8 @@ import BrowsePage from './pages/Browse';
 import WatchPage from './pages/Watch';
 import ErrorPage from './pages/Error';
 import store from './store/store';
+
+import './main.css';
 
 const router = createBrowserRouter([
   {
