@@ -4,7 +4,8 @@ import { nanoid } from 'nanoid';
 import { faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
 import { Upload } from '@aws-sdk/lib-storage';
-import { s3, VIDEOS_BUCKET } from '../s3/client';
+import { DeleteObjectsCommand } from '@aws-sdk/client-s3';
+import { s3, VIDEOS_BUCKET, PREVIEWS_BUCKET } from '../s3/client';
 import { channel, VIDEO_PROCESS_QUEUE } from '../rabbitmq/client';
 import { redis } from '../redis/client';
 
@@ -47,6 +48,51 @@ async function onVideos(_request: FastifyRequest, reply: FastifyReply) {
 }
 
 type RequestParams = { id: string };
+
+async function onDelete(request: FastifyRequest, reply: FastifyReply) {
+  // Get ID from the url.
+  const { id } = request.params as RequestParams;
+
+  // Find video in the database.
+  const document = await prisma.video.findFirst({
+    where: { reference: id },
+  });
+
+  if (document === null) {
+    const err = new Error(`Video does not exists.`);
+    reply.status(404).send(err);
+    return;
+  }
+
+  const { previews } = document;
+
+  // Remove all previews from S3.
+  const purgePreviewsCommand = new DeleteObjectsCommand({
+    Bucket: PREVIEWS_BUCKET,
+    Delete: {
+      Objects: previews.map((key: string) => ({
+        Key: key,
+      })),
+    },
+  });
+
+  // Remove the video file from S3.
+  const purgeVideoCommand = new DeleteObjectsCommand({
+    Bucket: VIDEOS_BUCKET,
+    Delete: {
+      Objects: [{ Key: id }],
+    },
+  });
+
+  await s3.send(purgePreviewsCommand);
+  await s3.send(purgeVideoCommand);
+
+  // Remove metadata from from the DBs.
+  await prisma.video.delete({ where: { id: document.id } });
+  await redis.del(document.id);
+
+  reply.send({ ok: true });
+}
 
 async function onSpecificVideo(request: FastifyRequest, reply: FastifyReply) {
   // Get ID from the url.
@@ -176,6 +222,13 @@ export default async function (fastify: FastifyInstance) {
     method: 'GET',
     url: '/:id',
     handler: onSpecificVideo,
+  });
+
+  // Register the '/videos/<ID>' (delete) route to fastify.
+  fastify.route({
+    method: 'DELETE',
+    url: '/:id',
+    handler: onDelete,
   });
 
   // Register the '/videos/upload' route to fastify.
