@@ -37,6 +37,7 @@ export const fetchMetadataAsync = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const response = await fetch(`${BASE_URL}/videos/${id}`);
     const video = (await response.json()) as Video;
+    video.thumbnail = `${BASE_URL}/previews/${video.thumbnail}`;
     thunkAPI.dispatch(fetchTrickPlayAsync(video.previews));
     return video;
   }
