@@ -1,4 +1,6 @@
+import _ from 'lodash';
 import { Readable } from 'stream';
+import parseRange, { Range } from 'range-parser';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
@@ -29,60 +31,45 @@ async function onVideoPlayback(request: FastifyRequest, reply: FastifyReply) {
     return;
   }
 
+  const { size } = videoDocument;
+
   if (!videoDocument.available) {
     const err = new Error(`Video is not yet available.`);
     reply.status(404).send(err);
     return;
   }
 
-  const range = request.headers.range;
+  const defaultRange = `bytes=0-${size - 1}`;
+  const range = parseRange(size, request.headers.range ?? defaultRange);
 
-  if (range !== undefined) {
-    // Extract start and end value from range header.
-    const [startValue, endValue] = range.replace(/bytes=/, '').split('-');
-    const size = videoDocument.size;
-
-    const start = parseInt(startValue, 10);
-    const end = endValue ? parseInt(endValue, 10) : size - 1;
-
-    // Handle unavailable range request.
-    if (start >= size || end >= size) {
-      const err = new Error(`The range you requested is unavailable.`);
-      reply.header('Content-Range', `bytes */${size}`);
-      reply.status(416).send(err);
-      return;
-    }
-
-    // Get requested range of the video file from the S3 bucket.
-    const cmd = new GetObjectCommand({
-      Bucket: VIDEOS_BUCKET,
-      Key: id,
-      Range: `bytes=${start}-${end}`,
-    });
-
-    const video = await s3.send(cmd);
-
-    // Stream video to client.
-    reply.header('Content-Range', `bytes ${start}-${end}/${size}`);
-    reply.header('Accept-Ranges', 'bytes');
-    reply.header('Content-Length', end - start + 1);
-    reply.header('Content-Type', video.ContentType);
-
-    return reply.send(video.Body as Readable);
+  // Handle unavailable range request.
+  if (range === -1 || range === -2) {
+    const err = new Error(`The range you requested is unavailable.`);
+    reply.header('Content-Range', `bytes */${size}`);
+    reply.status(416).send(err);
+    return;
   }
 
-  // Start streaming video object from the s3 bucket.
+  // Extract start and end value from range header.
+  const { start, end } = _.first(range) as Range;
+
+  // Get requested range of the video file from the S3 bucket.
   const cmd = new GetObjectCommand({
     Bucket: VIDEOS_BUCKET,
     Key: id,
+    Range: `bytes=${start}-${end}`,
   });
 
   const video = await s3.send(cmd);
 
-  // Stream video file to client.
-  return reply
-    .header('Content-Type', video.ContentType)
-    .send(video.Body as Readable);
+  // Stream video to client.
+  reply.code(request.headers.range ? 206 : 200);
+  reply.header('Accept-Ranges', 'bytes');
+  reply.header('Content-Length', end + 1 - start);
+  reply.header('Content-Range', `bytes ${start}-${end}/${size}`);
+  reply.header('Content-Type', video.ContentType);
+
+  return reply.send(video.Body as Readable);
 }
 
 export const autoPrefix = '/api/video-playback';
