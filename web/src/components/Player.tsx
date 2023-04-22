@@ -77,10 +77,12 @@ function Player() {
           status={status}
           muted={muted}
           fullScreen={fullScreen}
+          duration={meta!.duration}
           progress={progress}
           remaining={remaining}
           setPlayerStatus={setPlayerStatus}
           setMuted={setMuted}
+          step={meta!.step}
         />
       )}
     </div>
