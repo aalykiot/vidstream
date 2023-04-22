@@ -25,11 +25,11 @@ async function onPreview(request: FastifyRequest, reply: FastifyReply) {
 
     const preview = await s3.send(getCommand);
 
+    reply.header('Content-Type', 'image/png');
+    reply.header('Cache-Control', 'max-age=604800, must-revalidate');
+
     // Send the retrieved preview image as a stream.
-    await reply
-      .header('Content-Type', 'image/png')
-      .send(preview.Body as Readable);
-    //
+    await reply.send(preview.Body as Readable);
   } catch (e: unknown) {
     // Handle any errors that may occur during the process and send
     // an appropriate response.
