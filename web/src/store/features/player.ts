@@ -76,7 +76,16 @@ const initialState = {
 const playerSlice = createSlice({
   name: 'player',
   initialState,
-  reducers: {},
+  reducers: {
+    reset(state) {
+      state.source = null;
+      state.metadata.status = 'idle';
+      state.metadata.value = null;
+      state.trickPlay.status = 'idle';
+      state.trickPlay.value = null;
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchMetadataAsync.pending, (state) => {
       state.metadata.status = 'pending';
@@ -103,6 +112,10 @@ const playerSlice = createSlice({
     });
   },
 });
+
+/* ACTIONS */
+
+export const { reset } = playerSlice.actions;
 
 /* SELECTORS */
 

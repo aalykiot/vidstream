@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import Player from '../components/Player';
 import { AppDispatch } from '../store/store';
 import {
+  reset,
   getMetadataStatus,
   fetchMetadataAsync,
 } from '../store/features/player';
@@ -16,6 +17,13 @@ function WatchPage() {
   useEffect(() => {
     dispatch(fetchMetadataAsync(params.id as string));
   }, [params]);
+
+  // Purge data on unmount.
+  useEffect(() => {
+    return () => {
+      dispatch(reset());
+    };
+  }, []);
 
   return <div>{metaStatus === 'succeeded' && <Player />}</div>;
 }

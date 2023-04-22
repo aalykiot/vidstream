@@ -23,6 +23,7 @@ type Props = {
   duration: number;
   progress: number;
   remaining: number;
+  setTimestamp: Function;
   setPlayerStatus: Function;
   setMuted: Function;
   step: number;
@@ -39,6 +40,7 @@ function PlayerControls({
   setPlayerStatus,
   setMuted,
   step,
+  setTimestamp,
 }: Props) {
   const [showPreview, setShowPreview] = useState(false);
   const [trickIndex, setTrickIndex] = useState(0);
@@ -83,6 +85,8 @@ function PlayerControls({
             onMouseEnter={() => setShowPreview(true)}
             onMouseLeave={() => setShowPreview(false)}
             onMouseMove={onMouseMove}
+            onClick={() => setTimestamp(mouseTimestamp)}
+            aria-hidden="true"
           >
             <div
               className="text-white bg-green-400 h-[2px]"

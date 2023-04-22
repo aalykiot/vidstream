@@ -18,6 +18,10 @@ function Player() {
   const video = useRef<HTMLVideoElement>(null);
   const statusRef = useRef(status);
 
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
   useIdleTimer({
     timeout: 3500,
     onPresenceChange: (event) => setIsIdle(event.type === 'idle'),
@@ -33,8 +37,11 @@ function Player() {
   const setPlayerStatus = (value: Status) => {
     if (value === 'PLAYING') video.current?.play();
     if (value === 'PAUSED') video.current?.pause();
-    setStatus(value);
-    statusRef.current = value;
+  };
+
+  const setTimestamp = (timestamp: number) => {
+    video.current!.currentTime = timestamp;
+    if (status !== 'PLAYING') setPlayerStatus('PLAYING');
   };
 
   const onFullScreenChange = () => {
@@ -49,9 +56,11 @@ function Player() {
   };
 
   useEffect(() => {
+    const unmute = setTimeout(() => setMuted(false), 0);
     document.addEventListener('fullscreenchange', onFullScreenChange, true);
     document.addEventListener('keydown', onKeyDown);
     return () => {
+      clearTimeout(unmute);
       document.removeEventListener('fullscreenchange', onFullScreenChange);
       document.removeEventListener('keydown', onKeyDown);
     };
@@ -65,6 +74,8 @@ function Player() {
         autoPlay
         className="max-h-full"
         onTimeUpdate={onTimeUpdate}
+        onPlaying={() => setStatus('PLAYING')}
+        onPause={() => setStatus('PAUSED')}
         onEnded={() => setStatus('DONE')}
         muted={muted}
       >
@@ -80,6 +91,7 @@ function Player() {
           duration={meta!.duration}
           progress={progress}
           remaining={remaining}
+          setTimestamp={setTimestamp}
           setPlayerStatus={setPlayerStatus}
           setMuted={setMuted}
           step={meta!.step}
