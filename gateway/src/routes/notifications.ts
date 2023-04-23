@@ -50,7 +50,10 @@ async function onNotifications(connection: SocketStream, req: FastifyRequest) {
   }));
 
   // Send the video list to the client.
-  connection.socket.send(videos);
+  connection.socket.send({
+    type: 'event/batch-video-update',
+    payload: videos,
+  });
 }
 
 export const autoPrefix = '/notifications';
@@ -67,7 +70,10 @@ export default async function (fastify: FastifyInstance) {
   // Sends a message to all connected WebSocket clients.
   function broadcast(message: unknown) {
     for (const client of fastify.websocketServer.clients) {
-      client.send(JSON.stringify(message));
+      client.send({
+        type: 'event/single-video-update',
+        payload: JSON.stringify(message),
+      });
     }
   }
 
