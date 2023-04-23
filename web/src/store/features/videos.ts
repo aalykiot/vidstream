@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { setToken } from './token';
+import { connect } from './socket';
 import type { RootState } from '../store';
 
 type Video = {
@@ -19,7 +20,7 @@ type APIResponse = {
   videos: Video[];
 };
 
-const BASE_URL = 'http://localhost:8080/api';
+export const BASE_URL = 'http://localhost:8080/api';
 
 /* ASYNC THUNKS */
 
@@ -28,12 +29,9 @@ export const fetchVideosAsync = createAsyncThunk(
   async (_, thunkAPI) => {
     const response = await fetch(`${BASE_URL}/videos`);
     const { token, videos } = (await response.json()) as APIResponse;
-    const entities = videos.map((video) => ({
-      ...video,
-      thumbnail: `${BASE_URL}/previews/${video.thumbnail}`,
-    }));
     thunkAPI.dispatch(setToken(token));
-    return entities;
+    thunkAPI.dispatch(connect());
+    return videos;
   }
 );
 
@@ -52,14 +50,36 @@ const initialState = { value: [], status: 'idle', error: null } as InitState;
 const videosSlice = createSlice({
   name: 'videos',
   initialState,
-  reducers: {},
+  reducers: {
+    singleUpdate: (state, action) => {
+      const video = action.payload as Video;
+      video.thumbnail = `${BASE_URL}/previews/${video.thumbnail}`;
+      state.value.unshift(video);
+    },
+    batchUpdate: (state, action) => {
+      // Create full URLs when necessary.
+      const videos = action.payload as Video[];
+      const entities = videos.map((video) => ({
+        ...video,
+        thumbnail: `${BASE_URL}/previews/${video.thumbnail}`,
+      }));
+      state.value = [...entities.reverse(), ...state.value];
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchVideosAsync.pending, (state) => {
       state.status = 'pending';
     });
     builder.addCase(fetchVideosAsync.fulfilled, (state, action) => {
+      // Create full URLs when necessary.
+      const videos = action.payload as Video[];
+      const entities = videos.map((video) => ({
+        ...video,
+        thumbnail: `${BASE_URL}/previews/${video.thumbnail}`,
+      }));
+
       state.status = 'succeeded';
-      state.value = action.payload;
+      state.value = entities.reverse();
     });
     builder.addCase(fetchVideosAsync.rejected, (state, action) => {
       state.status = 'failed';
@@ -67,6 +87,9 @@ const videosSlice = createSlice({
     });
   },
 });
+
+/* ACTIONS */
+export const { singleUpdate, batchUpdate } = videosSlice.actions;
 
 /* SELECTORS */
 
