@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { setToken } from './token';
 import { connect } from './socket';
@@ -26,7 +27,7 @@ export const BASE_URL = 'http://localhost:8080/api';
 
 export const fetchVideosAsync = createAsyncThunk(
   'videos/fetchVideos',
-  async (_, thunkAPI) => {
+  async (__, thunkAPI) => {
     const response = await fetch(`${BASE_URL}/videos`);
     const { token, videos } = (await response.json()) as APIResponse;
     thunkAPI.dispatch(setToken(token));
@@ -52,18 +53,26 @@ const videosSlice = createSlice({
   initialState,
   reducers: {
     singleUpdate: (state, action) => {
+      // Create full URLs when necessary.
       const video = action.payload as Video;
       video.thumbnail = `${BASE_URL}/previews/${video.thumbnail}`;
-      state.value.unshift(video);
+
+      // Do not insert if it's duplicate.
+      if (!state.value.find(({ id }) => id === video.id)) {
+        state.value.unshift(video);
+      }
     },
     batchUpdate: (state, action) => {
       // Create full URLs when necessary.
       const videos = action.payload as Video[];
-      const entities = videos.map((video) => ({
-        ...video,
-        thumbnail: `${BASE_URL}/previews/${video.thumbnail}`,
-      }));
-      state.value = [...entities.reverse(), ...state.value];
+      const entities = videos
+        .map((video) => ({
+          ...video,
+          thumbnail: `${BASE_URL}/previews/${video.thumbnail}`,
+        }))
+        .reverse();
+
+      state.value = _.uniqBy([...entities, ...state.value], 'id');
     },
   },
   extraReducers: (builder) => {
@@ -89,6 +98,7 @@ const videosSlice = createSlice({
 });
 
 /* ACTIONS */
+
 export const { singleUpdate, batchUpdate } = videosSlice.actions;
 
 /* SELECTORS */
