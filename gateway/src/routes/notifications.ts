@@ -6,9 +6,29 @@ import { eventBus } from '../app';
 
 type QueryParams = { token: string };
 
+// Structure of client's events.
+type Event<T> = {
+  type: string;
+  payload?: T;
+};
+
 const prisma = new PrismaClient();
 
+async function handleIncoming(message: Buffer) {
+  // Parse binary message as event.
+  const data = message.toString();
+  const action = JSON.parse(data) as Event<string>;
+
+  // Handle event.
+  if (action.type === 'event/increment-view-count') {
+    await redis.incr(action.payload as string);
+  }
+}
+
 async function onNotifications(connection: SocketStream, req: FastifyRequest) {
+  // Handle incoming messages.
+  connection.socket.on('message', handleIncoming);
+
   // Extract the timestamp from the query parameter 'token'.
   const { token } = req.query as QueryParams;
 
