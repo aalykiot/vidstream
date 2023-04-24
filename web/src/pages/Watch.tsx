@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import ClipLoader from 'react-spinners/ClipLoader';
 import Player from '../components/Player';
 import { AppDispatch } from '../store/store';
+import { isSocketConnected, connect } from '../store/features/socket';
 import {
   reset,
   getMetadata,
@@ -17,6 +18,7 @@ function WatchPage() {
   const dispatch = useDispatch<AppDispatch>();
   const meta = useSelector(getMetadata);
   const trickStatus = useSelector(getTrickPlayStatus);
+  const isSocketActive = useSelector(isSocketConnected);
   const [loading, setLoading] = useState(true);
   const [showThumb, setShowThumb] = useState(false);
 
@@ -31,8 +33,9 @@ function WatchPage() {
     }
   }, [trickStatus]);
 
-  // Purge data on unmount.
+  // Connect to socket and purge data on unmount.
   useEffect(() => {
+    if (!isSocketActive) dispatch(connect());
     return () => {
       dispatch(reset());
     };

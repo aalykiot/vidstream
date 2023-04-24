@@ -28,10 +28,11 @@ export const BASE_URL = 'http://localhost:8080/api';
 export const fetchVideosAsync = createAsyncThunk(
   'videos/fetchVideos',
   async (__, thunkAPI) => {
+    const state = thunkAPI.getState() as RootState;
     const response = await fetch(`${BASE_URL}/videos`);
     const { token, videos } = (await response.json()) as APIResponse;
     thunkAPI.dispatch(setToken(token));
-    thunkAPI.dispatch(connect());
+    if (!state.socket) thunkAPI.dispatch(connect());
     return videos;
   }
 );

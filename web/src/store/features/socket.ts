@@ -1,4 +1,5 @@
 import { createSlice, createAction } from '@reduxjs/toolkit';
+import type { RootState } from '../store';
 
 /* STATE */
 
@@ -20,5 +21,9 @@ const tokenSlice = createSlice({
 
 export const connect = createAction<undefined>('socket/connect');
 export const { connected } = tokenSlice.actions;
+
+/* SELECTORS */
+
+export const isSocketConnected = (state: RootState) => state.socket;
 
 export default tokenSlice.reducer;
