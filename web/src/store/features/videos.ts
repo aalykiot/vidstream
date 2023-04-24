@@ -75,6 +75,11 @@ const videosSlice = createSlice({
 
       state.value = uniqBy([...entities, ...state.value], 'id');
     },
+    countView: (state, action) => {
+      const id = action.payload as string;
+      const video = state.value.find((v) => v.id === id);
+      if (video) video.views += 1;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchVideosAsync.pending, (state) => {
@@ -100,7 +105,7 @@ const videosSlice = createSlice({
 
 /* ACTIONS */
 
-export const { singleUpdate, batchUpdate } = videosSlice.actions;
+export const { singleUpdate, batchUpdate, countView } = videosSlice.actions;
 
 /* SELECTORS */
 

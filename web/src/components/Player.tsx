@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useIdleTimer } from 'react-idle-timer';
 import PlayerControls from './PlayerControls';
 import { AppDispatch } from '../store/store';
-import { getSource, getMetadata, countView } from '../store/features/player';
+import { getSource, getMetadata } from '../store/features/player';
+import { countView } from '../store/features/videos';
 
 export type Status = 'PLAYING' | 'PAUSED' | 'DONE';
 

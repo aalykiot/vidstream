@@ -2,8 +2,7 @@ import { Middleware, Dispatch, AnyAction } from '@reduxjs/toolkit';
 import Socket from '../../utils/socket';
 import type { RootState } from '../store';
 import { connect, connected } from '../features/socket';
-import { singleUpdate, batchUpdate } from '../features/videos';
-import { countView } from '../features/player';
+import { singleUpdate, batchUpdate, countView } from '../features/videos';
 
 const socketUri = 'ws://localhost:8080/notifications';
 const socket = new Socket();
