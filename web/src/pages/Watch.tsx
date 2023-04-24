@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Animate } from 'react-simple-animate';
+import ScaleLoader from 'react-spinners/ScaleLoader';
+import { motion, useAnimationControls } from 'framer-motion';
 import { useParams } from 'react-router-dom';
-import ClipLoader from 'react-spinners/ClipLoader';
 import Player from '../components/Player';
 import { AppDispatch } from '../store/store';
 import { isSocketConnected, connect } from '../store/features/socket';
@@ -19,8 +19,8 @@ function WatchPage() {
   const meta = useSelector(getMetadata);
   const trickStatus = useSelector(getTrickPlayStatus);
   const isSocketActive = useSelector(isSocketConnected);
+  const controls = useAnimationControls();
   const [loading, setLoading] = useState(true);
-  const [showThumb, setShowThumb] = useState(false);
 
   useEffect(() => {
     dispatch(fetchMetadataAsync(params.id as string));
@@ -45,28 +45,17 @@ function WatchPage() {
     <>
       {loading && (
         <div className="flex h-screen text-white justify-center items-center">
-          <Animate
-            play={showThumb}
-            start={{ opacity: 0 }}
-            end={{ opacity: 0.8 }}
-            duration={1.5}
-          >
-            <img
-              className="max-w-full max-h-screen object-cover"
-              src={meta?.thumbnail}
-              alt="The thumbnail of the video"
-              onLoad={() => setShowThumb(true)}
-            />
-          </Animate>
+          <motion.img
+            initial={{ opacity: 0 }}
+            animate={controls}
+            transition={{ duration: 1.5 }}
+            src={meta?.thumbnail}
+            alt="The thumbnail of the video"
+            className="max-w-full max-h-screen object-cover"
+            onLoad={() => controls.start({ opacity: 0.8 })}
+          />
           <div className="absolute top-0 left-0 flex h-screen w-full justify-center items-center">
-            <Animate play start={{ opacity: 0 }} end={{ opacity: 1 }}>
-              <ClipLoader
-                color="white"
-                size={80}
-                speedMultiplier={0.5}
-                className="drop-shadow"
-              />
-            </Animate>
+            <ScaleLoader color="white" className="drop-shadow opacity-70" />
           </div>
         </div>
       )}

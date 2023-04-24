@@ -84,7 +84,7 @@ function Player() {
   }, []);
 
   return (
-    <div className="flex relative h-screen w-full bg-black justify-center items-center">
+    <div className="flex relative h-screen w-full bg-black justify-center items-center overflow-y-hidden">
       <video
         controls={false}
         ref={video}
@@ -99,21 +99,20 @@ function Player() {
         <track kind="captions" />
         <source src={source!} type={meta!.mimetype} />
       </video>
-      {!isIdle && (
-        <PlayerControls
-          title={meta!.title}
-          status={status}
-          muted={muted}
-          fullScreen={fullScreen}
-          duration={meta!.duration}
-          progress={progress}
-          remaining={remaining}
-          setTimestamp={setTimestamp}
-          setPlayerStatus={setPlayerStatus}
-          setMuted={setMuted}
-          step={meta!.step}
-        />
-      )}
+      <PlayerControls
+        title={meta!.title}
+        status={status}
+        muted={muted}
+        fullScreen={fullScreen}
+        duration={meta!.duration}
+        progress={progress}
+        remaining={remaining}
+        show={!isIdle || status === 'DONE'}
+        setTimestamp={setTimestamp}
+        setPlayerStatus={setPlayerStatus}
+        setMuted={setMuted}
+        step={meta!.step}
+      />
     </div>
   );
 }

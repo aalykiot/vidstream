@@ -19,13 +19,14 @@ function VideoGroup() {
       <div
         className={classnames('flex-1 text-white mx-5 mb-6', styles.videosGrid)}
       >
-        {videos.map((video) => (
+        {videos.map((video, index) => (
           <Link to={`/watch/${video.id}`} key={video.id}>
             <VideoCard
               thumbnail={video.thumbnail}
               duration={video.duration}
               title={video.title}
               views={video.views}
+              index={index + 1}
             />
           </Link>
         ))}
