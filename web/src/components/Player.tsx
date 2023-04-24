@@ -1,8 +1,10 @@
+import { debounce } from 'lodash';
 import { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useIdleTimer } from 'react-idle-timer';
 import PlayerControls from './PlayerControls';
-import { getSource, getMetadata } from '../store/features/player';
+import { AppDispatch } from '../store/store';
+import { getSource, getMetadata, countView } from '../store/features/player';
 
 export type Status = 'PLAYING' | 'PAUSED' | 'DONE';
 
@@ -13,19 +15,34 @@ function Player() {
   const [muted, setMuted] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
+  const [counted, setCounted] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
   const meta = useSelector(getMetadata);
   const source = useSelector(getSource);
   const video = useRef<HTMLVideoElement>(null);
   const statusRef = useRef(status);
 
-  useEffect(() => {
-    statusRef.current = status;
-  }, [status]);
-
   useIdleTimer({
     timeout: 3500,
     onPresenceChange: (event) => setIsIdle(event.type === 'idle'),
   });
+
+  const incrementViewCount = () => {
+    if (statusRef.current === 'PLAYING') {
+      dispatch(countView(meta!.id));
+      setCounted(true);
+    }
+  };
+
+  // Increase the view count only if the user has watched a minimum
+  // of 15% of the video.
+  useEffect(() => {
+    statusRef.current = status;
+    if (!counted) {
+      const watchTime = Math.round((meta!.duration * 15) / 100);
+      debounce(incrementViewCount, watchTime * 1000)();
+    }
+  }, [status, counted]);
 
   const onTimeUpdate = () => {
     const currentTime = video.current?.currentTime || 0;

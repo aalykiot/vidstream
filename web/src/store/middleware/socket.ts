@@ -3,6 +3,7 @@ import Socket from '../../utils/socket';
 import type { RootState } from '../store';
 import { connect, connected } from '../features/socket';
 import { singleUpdate, batchUpdate } from '../features/videos';
+import { countView } from '../features/player';
 
 const socketUri = 'ws://localhost:8080/notifications';
 const socket = new Socket();
@@ -42,6 +43,12 @@ const socketMiddleware: Middleware = (storeApi) => (next) => (action) => {
       socket.connect(`${socketUri}/?token=${state.token}`);
       socket.on('open', () => dispatch(connected()));
       socket.on('message', handleIncoming(dispatch));
+      break;
+    case countView.type:
+      socket.send({
+        type: 'event/increment-view-count',
+        payload: action.payload,
+      });
       break;
     default:
       break;

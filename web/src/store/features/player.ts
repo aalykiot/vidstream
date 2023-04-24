@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 
 const BASE_URL = 'http://localhost:8080/api';
@@ -115,7 +115,7 @@ const playerSlice = createSlice({
 });
 
 /* ACTIONS */
-
+export const countView = createAction<string>('videos/countView');
 export const { reset } = playerSlice.actions;
 
 /* SELECTORS */

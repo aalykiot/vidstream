@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { uniqBy } from 'lodash';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { setToken } from './token';
 import { connect } from './socket';
@@ -73,7 +73,7 @@ const videosSlice = createSlice({
         }))
         .reverse();
 
-      state.value = _.uniqBy([...entities, ...state.value], 'id');
+      state.value = uniqBy([...entities, ...state.value], 'id');
     },
   },
   extraReducers: (builder) => {
