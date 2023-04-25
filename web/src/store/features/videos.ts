@@ -42,7 +42,7 @@ export const fetchVideosAsync = createAsyncThunk(
 type InitState = {
   value: Video[];
   status: 'idle' | 'pending' | 'succeeded' | 'failed';
-  error: string | undefined | null;
+  error: string | null;
 };
 
 const initialState = { value: [], status: 'idle', error: null } as InitState;
@@ -98,7 +98,7 @@ const videosSlice = createSlice({
     });
     builder.addCase(fetchVideosAsync.rejected, (state, action) => {
       state.status = 'failed';
-      state.error = action.error?.message;
+      state.error = action.error?.message ?? 'Unknown error';
     });
   },
 });

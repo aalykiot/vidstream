@@ -4,13 +4,13 @@ import SidePanel from '../components/SidePanel';
 import VideoGroup from '../components/VideoGroup';
 import UploadModal from '../components/UploadModal';
 import { fetchVideosAsync, getStatus } from '../store/features/videos';
-import { showModal, setShowModal } from '../store/features/upload';
 import { AppDispatch } from '../store/store';
+import { showModal } from '../store/features/upload';
 
 function BrowsePage() {
   const dispatch = useDispatch<AppDispatch>();
   const status = useSelector(getStatus);
-  const shouldShowModal = useSelector(showModal);
+  const show = useSelector(showModal);
 
   // Load videos from the API.
   useEffect(() => {
@@ -21,9 +21,7 @@ function BrowsePage() {
 
   return (
     <div className="flex bg-gray-900 h-screen">
-      {shouldShowModal && (
-        <UploadModal onExit={() => dispatch(setShowModal(false))} />
-      )}
+      {show && <UploadModal />}
       <SidePanel />
       <VideoGroup />
     </div>
