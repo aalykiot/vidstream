@@ -3,12 +3,14 @@ import tokenReducer from './features/token';
 import playerReducer from './features/player';
 import videosReducer from './features/videos';
 import socketReducer from './features/socket';
+import uploadReducer from './features/upload';
 import socket from './middleware/socket';
 
 const store = configureStore({
   reducer: {
     token: tokenReducer,
     socket: socketReducer,
+    upload: uploadReducer,
     player: playerReducer,
     videos: videosReducer,
   },
