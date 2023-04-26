@@ -1,3 +1,4 @@
+import { head } from 'lodash';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { nanoid } from 'nanoid';
 import { PrismaClient } from '@prisma/client';
@@ -139,14 +140,12 @@ const acceptableMimeTypes = [
   'video/webm',
 ];
 
-type RequestBody = { title: string | undefined };
-
 async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   // Process a single file.
-  const { title } = (request?.body || {}) as RequestBody;
   const data = await request.file();
+  const title = head(data?.filename?.split('.')) || 'No title';
 
-  if (title === undefined || data === undefined) {
+  if (data === undefined) {
     const err = new Error(`Couldn't process the file successfully.`);
     reply.status(400).send(err);
     return;
