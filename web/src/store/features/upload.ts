@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
 import axios from 'axios';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
@@ -13,10 +15,14 @@ export const uploadVideoAsync = createAsyncThunk(
       onUploadProgress(progressEvent) {
         const { loaded, total = Infinity } = progressEvent;
         const completed = Math.round((loaded * 100) / total);
-        // eslint-disable-next-line
         thunkAPI.dispatch(setProgress(completed));
       },
     });
+    // Reset state after 1.5 seconds.
+    setTimeout(() => {
+      thunkAPI.dispatch(setShowModal(false));
+      thunkAPI.dispatch(reset());
+    }, 1500);
   }
 );
 
@@ -50,6 +56,11 @@ const uploadSlice = createSlice({
     setProgress(state, action) {
       state.progress = action.payload;
     },
+    reset(state) {
+      state.status = 'idle';
+      state.progress = 0;
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(uploadVideoAsync.pending, (state) => {
@@ -68,12 +79,13 @@ const uploadSlice = createSlice({
 
 /* ACTIONS */
 
-export const { setShowModal, setProgress } = uploadSlice.actions;
+export const { setShowModal, setProgress, reset } = uploadSlice.actions;
 
 /* SELECTORS */
 
 export const showModal = (s: RootState) => s.upload.show;
 export const getProgress = (s: RootState) => s.upload.progress;
-export const getUploadStatus = (s: RootState) => s.upload.progress;
+export const getUploadStatus = (s: RootState) => s.upload.status;
+export const getUploadError = (s: RootState) => s.upload.error;
 
 export default uploadSlice.reducer;
