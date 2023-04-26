@@ -66,7 +66,7 @@ function UploadModal() {
                   <p className="text-gray-700 font-bold text-center mt-8">
                     {isDragActive
                       ? 'Drop the file here ...'
-                      : "Drag 'n' drop to upload ..."}
+                      : "Drag 'n' drop to upload"}
                   </p>
                   <button
                     type="button"

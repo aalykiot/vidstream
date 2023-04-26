@@ -86,13 +86,13 @@ function PlayerControls({
           >
             <LeftArrowIcon
               className="text-white w-9 h-9 drop-shadow-md cursor-pointer"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/browse')}
             />
             <DeleteIcon
               className="text-white w-9 h-9 drop-shadow-md cursor-pointer"
               onClick={() => {
                 removeVideo();
-                navigate(-1);
+                navigate('/browse');
               }}
             />
           </motion.div>
