@@ -5,7 +5,7 @@ import { useIdleTimer } from 'react-idle-timer';
 import PlayerControls from './PlayerControls';
 import { AppDispatch } from '../store/store';
 import { getSource, getMetadata } from '../store/features/player';
-import { countView } from '../store/features/videos';
+import { countView, removeVideoAsync } from '../store/features/videos';
 
 export type Status = 'PLAYING' | 'PAUSED' | 'DONE';
 
@@ -66,6 +66,12 @@ function Player() {
     setFullScreen((prevValue) => !prevValue);
   };
 
+  const removeVideo = () => {
+    if (meta) {
+      dispatch(removeVideoAsync(meta.id));
+    }
+  };
+
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.code === 'Space') {
       const { current } = statusRef;
@@ -109,6 +115,7 @@ function Player() {
         progress={progress}
         remaining={remaining}
         show={!isIdle || status === 'DONE'}
+        removeVideo={removeVideo}
         setTimestamp={setTimestamp}
         setPlayerStatus={setPlayerStatus}
         setMuted={setMuted}

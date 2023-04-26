@@ -1,12 +1,12 @@
 import { useState, useRef, MouseEvent } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Status } from './Player';
 import timeUtils from '../utils/time';
 import { getTrickPlay } from '../store/features/player';
 import { ReactComponent as LeftArrowIcon } from './icons/left-arrow-icon.svg';
-import { ReactComponent as DownloadIcon } from './icons/download-icon.svg';
+import { ReactComponent as DeleteIcon } from './icons/delete-icon.svg';
 import { ReactComponent as PlayIcon } from './icons/play-icon.svg';
 import { ReactComponent as PauseIcon } from './icons/pause-icon.svg';
 import { ReactComponent as SoundIcon } from './icons/sound-icon.svg';
@@ -24,6 +24,7 @@ type Props = {
   progress: number;
   remaining: number;
   show: boolean;
+  removeVideo: Function;
   setTimestamp: Function;
   setPlayerStatus: Function;
   setMuted: Function;
@@ -39,6 +40,7 @@ function PlayerControls({
   progress,
   remaining,
   show,
+  removeVideo,
   setPlayerStatus,
   setMuted,
   step,
@@ -50,6 +52,7 @@ function PlayerControls({
   const [mouseTimestamp, setMouseTimestamp] = useState(0);
   const previews = useSelector(getTrickPlay);
   const progressRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Handle full-screen action.
   const toggleFullScreen = async () => {
@@ -81,10 +84,17 @@ function PlayerControls({
             exit={{ opacity: 0, y: -10 }}
             className="flex absolute top-0 left-0 right-0 py-6 px-8 items-center justify-between"
           >
-            <Link to="/browse">
-              <LeftArrowIcon className="text-white w-9 h-9 drop-shadow-md" />
-            </Link>
-            <DownloadIcon className="text-white w-9 h-9 drop-shadow-md" />
+            <LeftArrowIcon
+              className="text-white w-9 h-9 drop-shadow-md cursor-pointer"
+              onClick={() => navigate(-1)}
+            />
+            <DeleteIcon
+              className="text-white w-9 h-9 drop-shadow-md cursor-pointer"
+              onClick={() => {
+                removeVideo();
+                navigate(-1);
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>

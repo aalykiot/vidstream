@@ -37,6 +37,14 @@ export const fetchVideosAsync = createAsyncThunk(
   }
 );
 
+export const removeVideoAsync = createAsyncThunk(
+  'videos/removeVideo',
+  async (videoId: string) => {
+    await fetch(`${BASE_URL}/videos/${videoId}`, { method: 'DELETE' });
+    return videoId;
+  }
+);
+
 /* STATE */
 
 type InitState = {
@@ -99,6 +107,9 @@ const videosSlice = createSlice({
     builder.addCase(fetchVideosAsync.rejected, (state, action) => {
       state.status = 'failed';
       state.error = action.error?.message ?? 'Unknown error';
+    });
+    builder.addCase(removeVideoAsync.fulfilled, (state, action) => {
+      state.value = state.value.filter(({ id }) => id !== action.payload);
     });
   },
 });
