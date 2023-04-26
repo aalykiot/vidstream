@@ -72,7 +72,7 @@ const uploadSlice = createSlice({
     });
     builder.addCase(uploadVideoAsync.rejected, (state, action) => {
       state.status = 'failed';
-      state.error = action.error?.message ?? 'Unknown error';
+      state.error = action.error?.message ?? 'unknown error';
     });
   },
 });
