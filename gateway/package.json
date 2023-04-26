@@ -15,7 +15,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.298.0",
     "@aws-sdk/lib-storage": "^3.299.0",
-    "@faker-js/faker": "^7.6.0",
     "@fastify/autoload": "^5.7.1",
     "@fastify/cors": "^8.2.0",
     "@fastify/multipart": "^7.5.0",

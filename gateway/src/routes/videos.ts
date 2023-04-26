@@ -1,7 +1,5 @@
-import _ from 'lodash';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { nanoid } from 'nanoid';
-import { faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
 import { Upload } from '@aws-sdk/lib-storage';
 import { DeleteObjectsCommand } from '@aws-sdk/client-s3';
@@ -141,11 +139,14 @@ const acceptableMimeTypes = [
   'video/webm',
 ];
 
+type RequestBody = { title: string | undefined };
+
 async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   // Process a single file.
+  const { title } = (request?.body || {}) as RequestBody;
   const data = await request.file();
 
-  if (data === undefined) {
+  if (title === undefined || data === undefined) {
     const err = new Error(`Couldn't process the file successfully.`);
     reply.status(400).send(err);
     return;
@@ -182,7 +183,7 @@ async function onUpload(request: FastifyRequest, reply: FastifyReply) {
   const document = await prisma.video.create({
     data: {
       reference: id,
-      title: faker.lorem.words(_.random(2, 4)),
+      title,
       size: data.file.bytesRead,
       previews: [],
       mimetype,
