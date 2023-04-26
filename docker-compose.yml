@@ -24,6 +24,7 @@ services:
   frameflow:
     build: ./frameflow
     command: sh -c "cargo watch -x run"
+    restart: on-failure
     depends_on:
       - minio
       - rabbitmq
