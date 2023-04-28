@@ -7,6 +7,7 @@ use constants::PREVIEWS_BUCKET;
 use constants::VIDEOS_BUCKET;
 use constants::VIDEO_METADATA_QUEUE;
 use constants::VIDEO_PROCESS_QUEUE;
+use dotenv::dotenv;
 use frames::generate_previews;
 use futures_lite::stream::StreamExt;
 use lapin::message::Delivery;
@@ -19,12 +20,15 @@ use lapin::Channel;
 use lapin::Connection;
 use lapin::ConnectionProperties;
 use nanoid::nanoid;
+use rayon::ThreadPool;
+use rayon::ThreadPoolBuilder;
 use serde::Deserialize;
 use serde::Serialize;
 use std::env;
 use std::error::Error;
+use std::num::NonZeroUsize;
 use std::sync::Arc;
-use tokio::sync::Semaphore;
+use std::thread;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct EventData {
@@ -52,6 +56,8 @@ struct Handler {
     client: Arc<s3::Client>,
     /// Shared AMQP channel.
     channel: Arc<Channel>,
+    /// Shared access to the thread-pool.
+    thread_pool_rc: Arc<ThreadPool>,
 }
 
 impl Handler {
@@ -85,7 +91,10 @@ impl Handler {
 
         // Generate preview frames from the video.
         let fname = filename.clone();
-        let previews = tokio::task::spawn_blocking(move || generate_previews(&fname)).await??;
+        let thread_pool = self.thread_pool_rc.clone();
+
+        let task = move || thread_pool.install(|| generate_previews(&fname));
+        let previews = tokio::task::spawn_blocking(task).await??;
 
         // Assign unique IDs to the preview frames.
         let step = previews.step_in_seconds;
@@ -143,8 +152,23 @@ impl Handler {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Load env variables.
+    dotenv().ok();
+
     // Initialize FFMPEG.
     frames::init();
+
+    // Create a tread-pool for CPU heavy tasks.
+    let default_size = unsafe { NonZeroUsize::new_unchecked(2) };
+    let num_cores = thread::available_parallelism().unwrap_or(default_size);
+    let num_threads = usize::from(num_cores) - 1;
+
+    let thread_pool = ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build()
+        .unwrap();
+
+    let thread_pool_rc = Arc::new(thread_pool);
 
     // Retrieve endpoint url and AWS config, create a new S3 client.
     let endpoint = std::env::var("AWS_ENDPOINT").unwrap();
@@ -171,20 +195,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .await?;
 
-    // Note: Due to high memory usage during video download/processing
-    // and past instances of encountering a "137 error" from Docker,
-    // the number of concurrent tasks will be limited to two at a time.
-    let semaphore = Arc::new(Semaphore::new(2));
-
-    loop {
-        // Wait for a permit to become available.
-        let permit = semaphore.clone().acquire_owned().await?;
-        let delivery = consumer.next().await.unwrap();
-
+    // Start listening for video-process events.
+    while let Some(delivery) = consumer.next().await {
         // Create an event handler.
         let handler = Handler {
             client: client_s3.clone(),
             channel: channel.clone(),
+            thread_pool_rc: thread_pool_rc.clone(),
         };
 
         tokio::spawn(async move {
@@ -192,7 +209,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
             if let Err(e) = handler.run(delivery.unwrap()).await {
                 eprintln!("Err: {e:?}");
             }
-            drop(permit);
         });
     }
+
+    Ok(())
 }
