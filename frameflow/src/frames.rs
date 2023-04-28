@@ -54,24 +54,21 @@ pub fn generate_previews(path: &String) -> Result<FrameResult> {
     let step = step.ceil() as usize * 5;
 
     let mut frames = vec![];
+    let mut frame_count = 0;
 
     // Loop through the packets in the input context.
     for (stream, packet) in context.packets() {
         if stream.index() == video_stream_idx {
             decoder.send_packet(&packet).unwrap();
-            receive_and_process_decoded_frames(&mut decoder, &mut scaler, &mut frames);
+            receive_and_process_decoded_frames(
+                &mut decoder,
+                &mut scaler,
+                &mut frames,
+                &mut frame_count,
+                step,
+            );
         }
     }
-
-    let width = decoder.width();
-    let height = decoder.height();
-
-    // Transform the `Video` frames to `PNG` frames by encoding them as PNG images.
-    let frames = frames
-        .iter()
-        .step_by(step)
-        .map(|frame| to_png_image(width, height, frame))
-        .collect::<Vec<Vec<u8>>>();
 
     Ok(FrameResult {
         step_in_seconds: 5,
@@ -84,18 +81,36 @@ pub fn generate_previews(path: &String) -> Result<FrameResult> {
 fn receive_and_process_decoded_frames(
     decoder: &mut ffmpeg_next::decoder::Video,
     scaler: &mut scaling::context::Context,
-    frames: &mut Vec<Video>,
+    frames: &mut Vec<PNGFrame>,
+    frame_count: &mut usize,
+    step: usize,
 ) {
     // Create a new empty video frame to store the scaled RGB frame.
     let mut decoded = Video::empty();
 
-    // Process each decoded frame until there are no more.
+    // Process each decoded frame discarding the unwanted ones.
     while decoder.receive_frame(&mut decoded).is_ok() {
+        // Count current frame.
+        *frame_count += 1;
+
+        // Avoid working on frames that we're not interested in.
+        if *frame_count % step != 0 {
+            continue;
+        }
+
         let mut rgb_frame = Video::empty();
+        let width = decoder.width();
+        let height = decoder.height();
+
+        // Decode to raw RGBA frame.
         scaler.run(&decoded, &mut rgb_frame).unwrap();
-        frames.push(rgb_frame);
+
+        let png_frame = to_png_image(width, height, &rgb_frame);
+        frames.push(png_frame);
     }
 }
+
+type PNGFrame = Vec<u8>;
 
 /// Convert a frame of a video to a PNG image with the specified width and height.
 fn to_png_image(width: u32, height: u32, frame: &Video) -> Vec<u8> {

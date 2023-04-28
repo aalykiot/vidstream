@@ -31,8 +31,6 @@ Access Points:
 - RabbitMQ Dashboard: http://localhost:15672/
 - MinIO Management: http://localhost:9000/
 
-> NOTE: The frameflow service, when executed inside a Docker container, tends to consume a significant amount of memory, which ultimately results in crashing the container. Currently, the root cause behind this behavior is unknown. 🤷‍♂️
-
 ## Demo
 
 ![Demo](./assets/vidstream-demo.gif)
