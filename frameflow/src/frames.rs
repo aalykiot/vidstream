@@ -94,7 +94,7 @@ fn receive_and_process_decoded_frames(
         *frame_count += 1;
 
         // Avoid working on frames that we're not interested in.
-        if *frame_count % step != 0 {
+        if *frame_count != 1 && *frame_count % step != 0 {
             continue;
         }
 

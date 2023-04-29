@@ -20,15 +20,11 @@ use lapin::Channel;
 use lapin::Connection;
 use lapin::ConnectionProperties;
 use nanoid::nanoid;
-use rayon::ThreadPool;
-use rayon::ThreadPoolBuilder;
 use serde::Deserialize;
 use serde::Serialize;
 use std::env;
 use std::error::Error;
-use std::num::NonZeroUsize;
 use std::sync::Arc;
-use std::thread;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct EventData {
@@ -56,8 +52,6 @@ struct Handler {
     client: Arc<s3::Client>,
     /// Shared AMQP channel.
     channel: Arc<Channel>,
-    /// Shared access to the thread-pool.
-    thread_pool_rc: Arc<ThreadPool>,
 }
 
 impl Handler {
@@ -91,10 +85,15 @@ impl Handler {
 
         // Generate preview frames from the video.
         let fname = filename.clone();
-        let thread_pool = self.thread_pool_rc.clone();
+        let (send, recv) = tokio::sync::oneshot::channel();
 
-        let task = move || thread_pool.install(|| generate_previews(&fname));
-        let previews = tokio::task::spawn_blocking(task).await??;
+        // Use rayon's global pool.
+        rayon::spawn(move || {
+            let previews = generate_previews(&fname);
+            let _ = send.send(previews);
+        });
+
+        let previews = recv.await?.unwrap();
 
         // Assign unique IDs to the preview frames.
         let step = previews.step_in_seconds;
@@ -158,18 +157,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Initialize FFMPEG.
     frames::init();
 
-    // Create a tread-pool for CPU heavy tasks.
-    let default_size = unsafe { NonZeroUsize::new_unchecked(2) };
-    let num_cores = thread::available_parallelism().unwrap_or(default_size);
-    let num_threads = usize::from(num_cores) - 1;
-
-    let thread_pool = ThreadPoolBuilder::new()
-        .num_threads(num_threads)
-        .build()
-        .unwrap();
-
-    let thread_pool_rc = Arc::new(thread_pool);
-
     // Retrieve endpoint url and AWS config, create a new S3 client.
     let endpoint = std::env::var("AWS_ENDPOINT").unwrap();
     let config = aws_config::from_env().endpoint_url(&endpoint).load().await;
@@ -201,7 +188,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let handler = Handler {
             client: client_s3.clone(),
             channel: channel.clone(),
-            thread_pool_rc: thread_pool_rc.clone(),
         };
 
         tokio::spawn(async move {
