@@ -7,8 +7,7 @@ import { DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { s3, VIDEOS_BUCKET, PREVIEWS_BUCKET } from '../s3/client';
 import { channel, VIDEO_PROCESS_QUEUE } from '../rabbitmq/client';
 import { redis } from '../redis/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../prisma/client';
 
 async function onVideos(_request: FastifyRequest, reply: FastifyReply) {
   // Get all available videos.

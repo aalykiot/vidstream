@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import { SocketStream } from '@fastify/websocket';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../prisma/client';
 import { redis } from '../redis/client';
 import { eventBus } from '../app';
 
@@ -11,8 +11,6 @@ type Event<T> = {
   type: string;
   payload?: T;
 };
-
-const prisma = new PrismaClient();
 
 async function handleIncoming(message: Buffer) {
   // Parse binary message as event.

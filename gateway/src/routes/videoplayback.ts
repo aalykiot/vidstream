@@ -2,13 +2,11 @@ import _ from 'lodash';
 import { Readable } from 'stream';
 import parseRange, { Range } from 'range-parser';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient } from '@prisma/client';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { s3, VIDEOS_BUCKET } from '../s3/client';
+import { prisma } from '../prisma/client';
 
 type RequestParams = { id: string };
-
-const prisma = new PrismaClient();
 
 async function onVideoPlayback(request: FastifyRequest, reply: FastifyReply) {
   // Get video ID from query params.
